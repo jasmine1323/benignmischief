@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sustainable Web Design | Low-Tech Approach</title>
+    <title>Benign Mischief</title>
     <style>
         * {
             margin: 0;
@@ -39,7 +39,7 @@
 
         .container {
             max-width: 720px;
-            margin: 30px auto;
+            margin: 50px auto;
             background: #fff;
             padding: 40px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -49,10 +49,11 @@
             border-bottom: 3px solid #222;
             padding-bottom: 20px;
             margin-bottom: 30px;
+            text-align: center;
         }
 
         h1 {
-            font-size: 2.2em;
+            font-size: 2.5em;
             font-weight: normal;
             letter-spacing: -1px;
             margin-bottom: 10px;
@@ -60,177 +61,84 @@
         }
 
         .subtitle {
-            font-size: 1.1em;
+            font-size: 1.2em;
             color: #666;
             font-style: italic;
         }
 
-        .status-bar {
+        .about {
+            margin: 40px 0;
+            padding: 25px;
             background: #f9f6ed;
-            border: 1px solid #d4cfbe;
-            padding: 15px;
-            margin: 25px 0;
-            font-size: 0.9em;
-            color: #555;
+            border-left: 4px solid #4a7c59;
         }
 
-        .status-bar strong {
-            color: #4a7c59;
-        }
-
-        h2 {
-            font-size: 1.6em;
+        .about h2 {
+            font-size: 1.4em;
             font-weight: normal;
-            margin: 30px 0 15px 0;
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 8px;
-        }
-
-        p {
             margin-bottom: 15px;
-            text-align: justify;
-        }
-
-        .article-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin: 30px 0;
-        }
-
-        .article-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            background: #fafaf8;
-            transition: box-shadow 0.3s;
-        }
-
-        .article-card:hover {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        .article-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 8px;
             color: #2c5f3f;
         }
 
-        .article-date {
-            font-size: 0.85em;
-            color: #888;
-            margin-bottom: 10px;
-        }
-
-        .article-excerpt {
-            font-size: 0.95em;
-            line-height: 1.6;
+        .about p {
             color: #444;
+            line-height: 1.8;
         }
 
-        .dithered-image {
-            width: 100%;
-            height: 200px;
-            background: 
-                repeating-linear-gradient(
-                    45deg,
-                    #8b9d83,
-                    #8b9d83 2px,
-                    #a8b9a0 2px,
-                    #a8b9a0 4px
-                );
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 0.9em;
-            text-align: center;
-            padding: 20px;
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 40px 0;
         }
 
-        .stats {
-            display: flex;
-            justify-content: space-around;
+        .nav-card {
             background: #f0ede3;
-            padding: 20px;
-            margin: 25px 0;
-            border: 1px solid #d4cfbe;
-        }
-
-        .stat-item {
+            border: 2px solid #d4cfbe;
+            padding: 30px;
             text-align: center;
-        }
-
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #4a7c59;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            margin: 25px 0;
-        }
-
-        .nav-links li {
-            margin: 10px 0;
-        }
-
-        .nav-links a {
-            color: #2c5f3f;
+            transition: all 0.3s;
             text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.2s;
+            color: #2c5f3f;
         }
 
-        .nav-links a:hover {
-            border-bottom: 1px solid #2c5f3f;
+        .nav-card:hover {
+            background: #e8e3d6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+
+        .nav-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #2c5f3f;
+        }
+
+        .nav-card p {
+            font-size: 0.95em;
+            color: #666;
         }
 
         footer {
-            margin-top: 40px;
+            margin-top: 50px;
             padding-top: 20px;
             border-top: 2px solid #ddd;
+            text-align: center;
             font-size: 0.9em;
-            color: #666;
+            color: #888;
         }
 
-        .design-notes {
-            background: #fff9e6;
-            border-left: 4px solid #d4a017;
-            padding: 15px;
-            margin: 25px 0;
-            font-size: 0.9em;
-        }
+        @media (max-width: 600px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .design-notes h3 {
-            margin-bottom: 10px;
-            color: #8b6914;
-            font-size: 1.1em;
-        }
-
-        @media (max-width: 768px) {
             .container {
-                padding: 20px;
+                padding: 25px;
             }
 
             h1 {
-                font-size: 1.8em;
-            }
-
-            .stats {
-                flex-direction: column;
-                gap: 15px;
+                font-size: 2em;
             }
         }
     </style>
@@ -242,95 +150,43 @@
 
     <div class="container">
         <header>
-            <h1>SUSTAINABLE WEB</h1>
-            <p class="subtitle">Questioning the need for an energy-intensive internet</p>
+            <h1>Benign Mischief</h1>
+            <p class="subtitle">A collection of curiosities</p>
         </header>
 
-        <div class="status-bar">
-            ⚡ This website is solar-powered and self-hosted. Current battery level: <strong>78%</strong> | 
-            Last updated: January 6, 2026 | Page weight: <strong>~42 KB</strong>
+        <div class="about">
+            <h2>About</h2>
+            <p>Welcome to my corner of the internet. This is a simple, low-energy website where I share things I find interesting. No fancy frameworks, no tracking scripts—just content and curiosity.</p>
         </div>
 
-        <article>
-            <h2>About This Project</h2>
-            <p>This is a demonstration of sustainable web design principles. By returning to basics and eliminating unnecessary complexity, we can create websites that consume a fraction of the energy used by modern sites while remaining fully functional and accessible.</p>
+        <div class="nav-grid">
+            <a href="art.html" class="nav-card">
+                <h3>🎨 Art</h3>
+                <p>Visual explorations and creative work</p>
+            </a>
 
-            <div class="dithered-image">
-                [DITHERED IMAGE PLACEHOLDER]<br>
-                Compressed using dithering technique<br>
-                Original: 2.4 MB → Optimized: 87 KB
-            </div>
+            <a href="memes.html" class="nav-card">
+                <h3>😄 Memes</h3>
+                <p>Internet humor and cultural moments</p>
+            </a>
 
-            <p>The modern web has become bloated with unnecessary JavaScript frameworks, high-resolution images, tracking scripts, and advertising networks. A typical website now weighs over 2 MB and makes hundreds of requests to third-party servers. This approach is neither sustainable nor necessary.</p>
+            <a href="games.html" class="nav-card">
+                <h3>🎮 Games</h3>
+                <p>Game reviews and recommendations</p>
+            </a>
 
-            <div class="design-notes">
-                <h3>Design Principles</h3>
-                <p>Static HTML with minimal CSS | No JavaScript required | Default system fonts | Dithered, compressed images | Optimized for low-bandwidth connections | Accessible to older devices and assistive technologies</p>
-            </div>
-
-            <h2>Recent Articles</h2>
-
-            <div class="article-grid">
-                <div class="article-card">
-                    <div class="article-title">How to Build a Low-Energy Website</div>
-                    <div class="article-date">December 15, 2025</div>
-                    <p class="article-excerpt">Static site generators, image compression, and thoughtful design choices can reduce website energy consumption by up to 95% while improving user experience and accessibility.</p>
-                </div>
-
-                <div class="article-card">
-                    <div class="article-title">The Case for Default System Fonts</div>
-                    <div class="article-date">November 28, 2025</div>
-                    <p class="article-excerpt">Custom web fonts require additional HTTP requests and increase page weight. System fonts are faster, more accessible, and perfectly adequate for most use cases.</p>
-                </div>
-
-                <div class="article-card">
-                    <div class="article-title">Solar-Powered Web Hosting</div>
-                    <div class="article-date">October 3, 2025</div>
-                    <p class="article-excerpt">Running a web server on solar power requires careful consideration of energy usage. Low-powered single-board computers and efficient static sites make it possible to host websites with minimal environmental impact.</p>
-                </div>
-            </div>
-
-            <h2>Website Statistics</h2>
-
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-number">42 KB</span>
-                    <span class="stat-label">Average page size</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">1.2 W</span>
-                    <span class="stat-label">Server power draw</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">96%</span>
-                    <span class="stat-label">Solar uptime</span>
-                </div>
-            </div>
-
-            <h2>Categories</h2>
-            <ul class="nav-links">
-                <li><a href="#">→ Sustainable Technology</a></li>
-                <li><a href="#">→ Web Design</a></li>
-                <li><a href="#">→ Energy Systems</a></li>
-                <li><a href="#">→ Low-Tech Solutions</a></li>
-                <li><a href="#">→ Digital Minimalism</a></li>
-            </ul>
-
-            <div class="design-notes">
-                <h3>Technical Details</h3>
-                <p>Built with pure HTML and CSS | No databases or server-side processing | Hosted on a Raspberry Pi powered by 50W solar panel | Battery backup provides 48 hours of operation | Total setup cost under $300</p>
-            </div>
-        </article>
+            <a href="science.html" class="nav-card">
+                <h3>🔬 Science</h3>
+                <p>Fascinating discoveries and ideas</p>
+            </a>
+        </div>
 
         <footer>
-            <p><strong>Design Philosophy:</strong> This website intentionally goes offline during extended periods of cloudy weather. This is not a bug but a feature that demonstrates our dependency on natural resources and renewable energy limitations.</p>
-            <p style="margin-top: 15px;">Content available offline via RSS feed | Source code available on request | No tracking, analytics, or third-party requests | Best viewed with any browser</p>
-            <p style="margin-top: 15px; color: #999; font-size: 0.85em;">Made with care for the planet | January 2026</p>
+            <p>Built with minimal energy | Page weight: ~8 KB</p>
         </footer>
     </div>
 
     <script>
-        // Minimal battery animation
         const battery = document.querySelector('.battery-level');
         let level = 78;
         
