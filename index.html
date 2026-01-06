@@ -182,11 +182,12 @@
         </div>
 
         <footer>
-            <p>Built with minimal energy | Page weight: ~8 KB</p>
+            <p>Built with minimal energy | Page weight: <span id="page-weight">calculating...</span></p>
         </footer>
     </div>
 
     <script>
+        // Battery animation
         const battery = document.querySelector('.battery-level');
         let level = 78;
         
@@ -194,6 +195,28 @@
             level = 50 + Math.random() * 40;
             battery.style.width = level + '%';
         }, 5000);
+
+        // Calculate page weight
+        window.addEventListener('load', function() {
+            // Get the HTML size
+            const htmlSize = new Blob([document.documentElement.outerHTML]).size;
+            
+            // Try to get resource sizes if available
+            let totalSize = htmlSize;
+            
+            if (performance && performance.getEntriesByType) {
+                const resources = performance.getEntriesByType('resource');
+                resources.forEach(resource => {
+                    if (resource.transferSize) {
+                        totalSize += resource.transferSize;
+                    }
+                });
+            }
+            
+            // Convert to KB and display
+            const sizeKB = (totalSize / 1024).toFixed(1);
+            document.getElementById('page-weight').textContent = sizeKB + ' KB';
+        });
     </script>
 </body>
 </html>
