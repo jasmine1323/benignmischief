@@ -3,46 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art | Benign Mischief</title>
+    <title>Art - Benign Mischief</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Georgia, serif;
-            line-height: 1.7;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
             color: #222;
-            background: linear-gradient(to bottom, #f4f1e8 0%, #e8e3d6 100%);
+            background: #f5f5f5;
             padding: 20px;
         }
+
         .container {
             max-width: 720px;
             margin: 50px auto;
             background: #fff;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            border: 2px solid #333;
         }
+
+        header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
         h1 {
-            font-size: 2.5em;
-            color: #2c5f3f;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #000;
+            letter-spacing: 2px;
         }
-        .back-link {
+
+        .nav-link {
             display: inline-block;
-            margin-bottom: 30px;
-            color: #2c5f3f;
+            margin-top: 10px;
+            color: #000;
             text-decoration: none;
-            border-bottom: 2px solid transparent;
+            font-size: 0.9em;
         }
-        .back-link:hover { border-bottom: 2px solid #2c5f3f; }
-        .content { margin: 30px 0; color: #444; }
+
+        .nav-link:hover {
+            background: #000;
+            color: #fff;
+            padding: 2px 4px;
+        }
+
+        .theme-selector {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .theme-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .theme-selector select {
+            padding: 5px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .nav-card {
+            background: #f0f0f0;
+            border: 1px solid #333;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .nav-card:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .nav-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="index.html" class="back-link">← Back to Home</a>
-        <h1>🎨 Art</h1>
-        <div class="content">
-            <p>Coming soon: Visual explorations and creative work.</p>
+        <header>
+            <h1>[ ART ]</h1>
+            <a href="index.html" class="nav-link">← back</a>
+        </header>
+
+        <div class="theme-selector">
+            <label>[THEME]</label>
+            <select id="theme-select">
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+                <option value="space">space</option>
+                <option value="terminal">terminal</option>
+                <option value="forest">forest</option>
+            </select>
+        </div>
+
+        <div class="nav-grid">
+            <a href="drawing.html" class="nav-card">
+                <h3>[ DRAWING ]</h3>
+            </a>
+
+            <a href="photography.html" class="nav-card">
+                <h3>[ PHOTOGRAPHY ]</h3>
+            </a>
+
+            <a href="poetry.html" class="nav-card">
+                <h3>[ POETRY ]</h3>
+            </a>
+
+            <a href="prose.html" class="nav-card">
+                <h3>[ PROSE ]</h3>
+            </a>
+
+            <a href="handmade-books.html" class="nav-card">
+                <h3>[ HANDMADE BOOKS ]</h3>
+            </a>
+
+            <a href="other-crafts.html" class="nav-card">
+                <h3>[ OTHER CRAFTS ]</h3>
+            </a>
         </div>
     </div>
+
+    <script>
+        // Theme system - copy this block to each page
+        const themes={light:{bodyBg:'#f5f5f5',containerBg:'#fff',containerBorder:'#333',textColor:'#000',secondaryText:'#666',controlsBg:'#f0f0f0',controlsBorder:'#333',selectBg:'white',selectBorder:'#333'},dark:{bodyBg:'#1a1a1a',containerBg:'#2a2a2a',containerBorder:'#fff',textColor:'#fff',secondaryText:'#ccc',controlsBg:'#3a3a3a',controlsBorder:'#fff',selectBg:'#2a2a2a',selectBorder:'#fff'},space:{bodyBg:'#0a0a1a',containerBg:'#1a1a2e',containerBorder:'#4a5f8f',textColor:'#a8c0ff',secondaryText:'#7a9ad8',controlsBg:'#252538',controlsBorder:'#4a5f8f',selectBg:'#1a1a2e',selectBorder:'#4a5f8f'},terminal:{bodyBg:'#2b0000',containerBg:'#3d0000',containerBorder:'#ff4444',textColor:'#ff6666',secondaryText:'#cc4444',controlsBg:'#4d0000',controlsBorder:'#ff4444',selectBg:'#3d0000',selectBorder:'#ff4444'},forest:{bodyBg:'#1a2a1a',containerBg:'#2a3a2a',containerBorder:'#6b8e6b',textColor:'#a8d8a8',secondaryText:'#7db87d',controlsBg:'#3a4a3a',controlsBorder:'#6b8e6b',selectBg:'#2a3a2a',selectBorder:'#6b8e6b'}};
+
+        function applyTheme(n){const t=themes[n];if(!t)return;const s=(e,p)=>{const el=document.querySelectorAll(e);el.forEach(i=>Object.keys(p).forEach(k=>i.style[k]=p[k]))};document.body.style.background=t.bodyBg;document.body.style.color=t.textColor;s('.container',{background:t.containerBg,borderColor:t.containerBorder});s('header',{borderColor:t.containerBorder});s('h1,.modal-title',{color:t.textColor});s('.nav-link,.modal-close',{color:t.textColor});s('.controls,.theme-selector,.about,.modal-annotations',{background:t.controlsBg,borderColor:t.controlsBorder});s('.controls label,.theme-selector label,.about h2,.modal-annotations h3',{color:t.textColor});s('.controls select,.theme-selector select',{background:t.selectBg,color:t.textColor,borderColor:t.selectBorder});s('.subtitle,.about p,.modal-author,.modal-details,.modal-annotations p',{color:t.secondaryText});s('.nav-card',{background:t.controlsBg,borderColor:t.controlsBorder,color:t.textColor});s('.nav-card p',{color:t.secondaryText});s('footer',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details strong',{color:t.textColor});const m=document.querySelector('.modal');if(m){const h=t.bodyBg,r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);m.style.background=`rgba(${r},${g},${b},0.9)`}const mc=document.querySelector('.modal-content');if(mc){mc.style.background=t.containerBg;mc.style.borderColor=t.containerBorder;mc.style.color=t.textColor}localStorage.setItem('siteTheme',n)}
+
+        const savedTheme=localStorage.getItem('siteTheme')||'light';const ts=document.getElementById('theme-select');if(ts){ts.value=savedTheme;ts.addEventListener('change',e=>applyTheme(e.target.value))}applyTheme(savedTheme);
+    </script>
 </body>
 </html>
