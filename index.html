@@ -12,10 +12,10 @@
         }
 
         body {
-            font-family: Georgia, serif;
-            line-height: 1.7;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
             color: #222;
-            background: linear-gradient(to bottom, #f4f1e8 0%, #e8e3d6 100%);
+            background: #f5f5f5;
             padding: 20px;
             max-width: 100%;
         }
@@ -25,14 +25,15 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 8px;
-            background: #d0d0d0;
+            height: 4px;
+            background: #ddd;
             z-index: 1000;
+            border-bottom: 1px solid #333;
         }
 
         .battery-level {
             height: 100%;
-            background: linear-gradient(90deg, #4a7c59 0%, #6b9d7a 100%);
+            background: #000;
             width: 78%;
             transition: width 0.3s;
         }
@@ -41,91 +42,111 @@
             max-width: 720px;
             margin: 50px auto;
             background: #fff;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            border: 2px solid #333;
         }
 
         header {
-            border-bottom: 3px solid #222;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
             text-align: center;
         }
 
         h1 {
-            font-size: 2.5em;
-            font-weight: normal;
-            letter-spacing: -1px;
+            font-size: 1.8em;
+            font-weight: bold;
+            letter-spacing: 3px;
             margin-bottom: 10px;
-            color: #1a1a1a;
+            color: #000;
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 0.9em;
             color: #666;
-            font-style: italic;
         }
 
         .about {
-            margin: 40px 0;
-            padding: 25px;
-            background: #f9f6ed;
-            border-left: 4px solid #4a7c59;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border: 1px solid #333;
         }
 
         .about h2 {
-            font-size: 1.4em;
-            font-weight: normal;
-            margin-bottom: 15px;
-            color: #2c5f3f;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #000;
         }
 
         .about p {
             color: #444;
-            line-height: 1.8;
+            line-height: 1.6;
+        }
+
+        .theme-selector {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .theme-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .theme-selector select {
+            padding: 5px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
         }
 
         .nav-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 40px 0;
+            gap: 15px;
+            margin: 30px 0;
         }
 
         .nav-card {
-            background: #f0ede3;
-            border: 2px solid #d4cfbe;
-            padding: 30px;
+            background: #f0f0f0;
+            border: 1px solid #333;
+            padding: 25px;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-decoration: none;
-            color: #2c5f3f;
+            color: #000;
         }
 
         .nav-card:hover {
-            background: #e8e3d6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-3px);
+            background: #000;
+            color: #fff;
         }
 
         .nav-card h3 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-            color: #2c5f3f;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
 
         .nav-card p {
-            font-size: 0.95em;
-            color: #666;
+            font-size: 0.85em;
+            color: inherit;
         }
 
         footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
             text-align: center;
-            font-size: 0.9em;
-            color: #888;
+            font-size: 0.85em;
+            color: #666;
         }
 
         @media (max-width: 600px) {
@@ -134,11 +155,11 @@
             }
 
             .container {
-                padding: 25px;
+                padding: 20px;
             }
 
             h1 {
-                font-size: 2em;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -150,39 +171,55 @@
 
     <div class="container">
         <header>
-            <h1>Benign Mischief</h1>
-            <p class="subtitle">A collection of curiosities</p>
+            <h1>BENIGN MISCHIEF</h1>
+            <p class="subtitle">a collection of curiosities</p>
         </header>
 
+        <div class="theme-selector">
+            <label>[THEME]</label>
+            <select id="theme-select">
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+                <option value="space">space</option>
+                <option value="terminal">terminal</option>
+                <option value="forest">forest</option>
+            </select>
+        </div>
+
         <div class="about">
-            <h2>About</h2>
-            <p>Welcome to my corner of the internet. This is a simple, low-energy website where I share things I find interesting. No fancy frameworks, no tracking scripts—just content and curiosity.</p>
+            <h2>[ ABOUT ]</h2>
+            <p>welcome to my corner of the internet. this is a simple, low-energy website where i share things i find interesting. no fancy frameworks, no tracking scripts—just content and curiosity.</p>
         </div>
 
         <div class="nav-grid">
             <a href="art.html" class="nav-card">
-                <h3>🎨 Art</h3>
-                <p>Visual explorations and creative work</p>
+                <h3>[ ART ]</h3>
+                <p>visual explorations</p>
             </a>
 
             <a href="memes.html" class="nav-card">
-                <h3>😄 Memes</h3>
-                <p>Internet humor and cultural moments</p>
+                <h3>[ MEMES ]</h3>
+                <p>internet humor</p>
             </a>
 
-            <a href="library.html" class="nav-card">
-                <h3>Library</h3>
-                <p>Books Books BOOKKSSSSS</p>
+            <a href="games.html" class="nav-card">
+                <h3>[ GAMES ]</h3>
+                <p>game reviews</p>
             </a>
 
             <a href="science.html" class="nav-card">
-                <h3>🔬 Science</h3>
-                <p>Fascinating discoveries and ideas</p>
+                <h3>[ SCIENCE ]</h3>
+                <p>discoveries and ideas</p>
+            </a>
+
+            <a href="library.html" class="nav-card">
+                <h3>[ LIBRARY ]</h3>
+                <p>book collection</p>
             </a>
         </div>
 
         <footer>
-            <p>Built with minimal energy | Page weight: <span id="page-weight">calculating...</span></p>
+            <p>built with minimal energy | page weight: <span id="page-weight">calculating...</span></p>
         </footer>
     </div>
 
@@ -198,10 +235,7 @@
 
         // Calculate page weight
         window.addEventListener('load', function() {
-            // Get the HTML size
             const htmlSize = new Blob([document.documentElement.outerHTML]).size;
-            
-            // Try to get resource sizes if available
             let totalSize = htmlSize;
             
             if (performance && performance.getEntriesByType) {
@@ -213,9 +247,142 @@
                 });
             }
             
-            // Convert to KB and display
             const sizeKB = (totalSize / 1024).toFixed(1);
             document.getElementById('page-weight').textContent = sizeKB + ' KB';
+        });
+
+        // Theme definitions
+        const themes = {
+            light: {
+                bodyBg: '#f5f5f5',
+                containerBg: '#fff',
+                containerBorder: '#333',
+                textColor: '#000',
+                secondaryText: '#666',
+                controlsBg: '#f0f0f0',
+                controlsBorder: '#333',
+                selectBg: 'white',
+                selectBorder: '#333',
+                batteryBg: '#ddd',
+                batteryFill: '#000'
+            },
+            dark: {
+                bodyBg: '#1a1a1a',
+                containerBg: '#2a2a2a',
+                containerBorder: '#fff',
+                textColor: '#fff',
+                secondaryText: '#ccc',
+                controlsBg: '#3a3a3a',
+                controlsBorder: '#fff',
+                selectBg: '#2a2a2a',
+                selectBorder: '#fff',
+                batteryBg: '#444',
+                batteryFill: '#fff'
+            },
+            space: {
+                bodyBg: '#0a0a1a',
+                containerBg: '#1a1a2e',
+                containerBorder: '#4a5f8f',
+                textColor: '#a8c0ff',
+                secondaryText: '#7a9ad8',
+                controlsBg: '#252538',
+                controlsBorder: '#4a5f8f',
+                selectBg: '#1a1a2e',
+                selectBorder: '#4a5f8f',
+                batteryBg: '#2a2a4a',
+                batteryFill: '#6a8fff'
+            },
+            terminal: {
+                bodyBg: '#2b0000',
+                containerBg: '#3d0000',
+                containerBorder: '#ff4444',
+                textColor: '#ff6666',
+                secondaryText: '#cc4444',
+                controlsBg: '#4d0000',
+                controlsBorder: '#ff4444',
+                selectBg: '#3d0000',
+                selectBorder: '#ff4444',
+                batteryBg: '#5d0000',
+                batteryFill: '#ff4444'
+            },
+            forest: {
+                bodyBg: '#1a2a1a',
+                containerBg: '#2a3a2a',
+                containerBorder: '#6b8e6b',
+                textColor: '#a8d8a8',
+                secondaryText: '#7db87d',
+                controlsBg: '#3a4a3a',
+                controlsBorder: '#6b8e6b',
+                selectBg: '#2a3a2a',
+                selectBorder: '#6b8e6b',
+                batteryBg: '#4a5a4a',
+                batteryFill: '#8ec88e'
+            }
+        };
+
+        // Theme switching
+        document.getElementById('theme-select').addEventListener('change', function(e) {
+            const themeName = e.target.value;
+            const theme = themes[themeName];
+            
+            // Apply theme
+            document.body.style.background = theme.bodyBg;
+            document.body.style.color = theme.textColor;
+            
+            const batteryIndicator = document.querySelector('.battery-indicator');
+            batteryIndicator.style.background = theme.batteryBg;
+            batteryIndicator.style.borderColor = theme.containerBorder;
+            
+            const batteryLevel = document.querySelector('.battery-level');
+            batteryLevel.style.background = theme.batteryFill;
+            
+            const container = document.querySelector('.container');
+            container.style.background = theme.containerBg;
+            container.style.borderColor = theme.containerBorder;
+            
+            const header = document.querySelector('header');
+            header.style.borderColor = theme.containerBorder;
+            
+            const h1 = document.querySelector('h1');
+            h1.style.color = theme.textColor;
+            
+            const subtitle = document.querySelector('.subtitle');
+            subtitle.style.color = theme.secondaryText;
+            
+            const themeSelector = document.querySelector('.theme-selector');
+            themeSelector.style.background = theme.controlsBg;
+            themeSelector.style.borderColor = theme.controlsBorder;
+            
+            const themeSelectorLabel = themeSelector.querySelector('label');
+            themeSelectorLabel.style.color = theme.textColor;
+            
+            const themeSelectorSelect = themeSelector.querySelector('select');
+            themeSelectorSelect.style.background = theme.selectBg;
+            themeSelectorSelect.style.color = theme.textColor;
+            themeSelectorSelect.style.borderColor = theme.selectBorder;
+            
+            const about = document.querySelector('.about');
+            about.style.background = theme.controlsBg;
+            about.style.borderColor = theme.controlsBorder;
+            
+            const aboutH2 = document.querySelector('.about h2');
+            aboutH2.style.color = theme.textColor;
+            
+            const aboutP = document.querySelector('.about p');
+            aboutP.style.color = theme.secondaryText;
+            
+            const navCards = document.querySelectorAll('.nav-card');
+            navCards.forEach(card => {
+                card.style.background = theme.controlsBg;
+                card.style.borderColor = theme.controlsBorder;
+                card.style.color = theme.textColor;
+                const p = card.querySelector('p');
+                p.style.color = theme.secondaryText;
+            });
+            
+            const footer = document.querySelector('footer');
+            footer.style.borderColor = theme.controlsBorder;
+            footer.style.color = theme.secondaryText;
         });
     </script>
 </body>
