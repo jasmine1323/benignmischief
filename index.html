@@ -304,11 +304,34 @@
         const CHAR_H = 14;
         
         let snake, food, dir, running = true;
+
+        function measureChar() {
+            const span = document.createElement("span");
+            span.textContent = "@";
+            span.style.position = "absolute";
+            span.style.visibility = "hidden";
+            span.style.fontFamily = "Courier New, monospace";
+            span.style.fontSize = "14px";
+            document.body.appendChild(span);
         
-        function resizeBoard() {
-            cols = Math.floor(window.innerWidth / CHAR_W);
-            rows = Math.floor(window.innerHeight / CHAR_H);
+            const rect = span.getBoundingClientRect();
+            document.body.removeChild(span);
+        
+            return { w: rect.width, h: rect.height };
         }
+        
+        const CHAR = measureChar();
+        
+        function resizeGrid() {
+            cols = Math.floor(window.innerWidth / CHAR.w);
+            rows = Math.floor(window.innerHeight / CHAR.h);
+        }
+
+        
+        // function resizeBoard() {
+        //     cols = Math.floor(window.innerWidth / CHAR_W);
+        //     rows = Math.floor(window.innerHeight / CHAR_H);
+        // }
         window.addEventListener("resize", resizeBoard);
         resizeBoard();
         
