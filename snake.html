@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - Benign Mischief</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
+            color: #222;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border: 2px solid #333;
+        }
+
+        header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #000;
+            letter-spacing: 2px;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #000;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .nav-link:hover {
+            background: #000;
+            color: #fff;
+            padding: 2px 4px;
+        }
+
+        .theme-selector {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .theme-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .theme-selector select {
+            padding: 5px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .snake-game {
+            margin: 30px 0;
+        }
+
+        .game-info {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .game-controls {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .game-controls button {
+            font-family: 'Courier New', Courier, monospace;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: 1px solid #333;
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .game-controls button:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        #game-board {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-size: 0.8em;
+            line-height: 1;
+            text-align: center;
+            border: 2px solid #333;
+        }
+
+        .game-instructions {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>[ SNAKE ]</h1>
+            <a href="index.html" class="nav-link">← back</a>
+        </header>
+
+        <div class="theme-selector">
+            <label>[THEME]</label>
+            <select id="theme-select">
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+                <option value="space">space</option>
+                <option value="terminal">terminal</option>
+                <option value="forest">forest</option>
+            </select>
+        </div>
+
+        <div class="snake-game">
+            <div class="game-info">
+                <span>Score: <span id="score">0</span></span>
+                <span style="margin-left: 20px;">High Score: <span id="high-score">0</span></span>
+            </div>
+            <div class="game-controls">
+                <button onclick="startGame()">[START]</button>
+                <button onclick="pauseGame()">[PAUSE]</button>
+            </div>
+            <pre id="game-board"></pre>
+            <div class="game-instructions">
+                Use arrow keys or WASD to move
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Snake Game
+        const BOARD_WIDTH = 40;
+        const BOARD_HEIGHT = 20;
+        let snake = [{x: 20, y: 10}];
+        let direction = {x: 1, y: 0};
+        let nextDirection = {x: 1, y: 0};
+        let food = {x: 30, y: 10};
+        let score = 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let gameRunning = false;
+        let gameInterval;
+
+        document.getElementById('high-score').textContent = highScore;
+
+        function drawBoard() {
+            let board = '';
+            for (let y = 0; y < BOARD_HEIGHT; y++) {
+                for (let x = 0; x < BOARD_WIDTH; x++) {
+                    if (snake[0].x === x && snake[0].y === y) {
+                        board += '@';
+                    }
+                    else if (snake.slice(1).some(seg => seg.x === x && seg.y === y)) {
+                        board += 'o';
+                    }
+                    else if (food.x === x && food.y === y) {
+                        board += '*';
+                    }
+                    else {
+                        board += '.';
+                    }
+                }
+                board += '\n';
+            }
+            document.getElementById('game-board').textContent = board;
+        }
+
+        function spawnFood() {
+            do {
+                food = {
+                    x: Math.floor(Math.random() * BOARD_WIDTH),
+                    y: Math.floor(Math.random() * BOARD_HEIGHT)
+                };
+            } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            direction = nextDirection;
+
+            const newHead = {
+                x: (snake[0].x + direction.x + BOARD_WIDTH) % BOARD_WIDTH,
+                y: (snake[0].y + direction.y + BOARD_HEIGHT) % BOARD_HEIGHT
+            };
+
+            if (snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(newHead);
+
+            if (newHead.x === food.x && newHead.y === food.y) {
+                score++;
+                document.getElementById('score').textContent = score;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('snakeHighScore', highScore);
+                    document.getElementById('high-score').textContent = highScore;
+                }
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            drawBoard();
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            
+            snake = [{x: 20, y: 10}];
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            score = 0;
+            document.getElementById('score').textContent = score;
+            spawnFood();
+            gameRunning = true;
+            
+            drawBoard();
+            gameInterval = setInterval(gameLoop, 120);
+        }
+
+        function pauseGame() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            alert('Game Over! Score: ' + score);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (direction.y === 0) nextDirection = {x: 0, y: -1};
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (direction.y === 0) nextDirection = {x: 0, y: 1};
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (direction.x === 0) nextDirection = {x: -1, y: 0};
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (direction.x === 0) nextDirection = {x: 1, y: 0};
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        drawBoard();
+
+        // Theme system
+        const themes={light:{bodyBg:'#f5f5f5',containerBg:'#fff',containerBorder:'#333',textColor:'#000',secondaryText:'#666',controlsBg:'#f0f0f0',controlsBorder:'#333',selectBg:'white',selectBorder:'#333'},dark:{bodyBg:'#1a1a1a',containerBg:'#2a2a2a',containerBorder:'#fff',textColor:'#fff',secondaryText:'#ccc',controlsBg:'#3a3a3a',controlsBorder:'#fff',selectBg:'#2a2a2a',selectBorder:'#fff'},space:{bodyBg:'#0a0a1a',containerBg:'#1a1a2e',containerBorder:'#4a5f8f',textColor:'#a8c0ff',secondaryText:'#7a9ad8',controlsBg:'#252538',controlsBorder:'#4a5f8f',selectBg:'#1a1a2e',selectBorder:'#4a5f8f'},terminal:{bodyBg:'#2b0000',containerBg:'#3d0000',containerBorder:'#ff4444',textColor:'#ff6666',secondaryText:'#cc4444',controlsBg:'#4d0000',controlsBorder:'#ff4444',selectBg:'#3d0000',selectBorder:'#ff4444'},forest:{bodyBg:'#1a2a1a',containerBg:'#2a3a2a',containerBorder:'#6b8e6b',textColor:'#a8d8a8',secondaryText:'#7db87d',controlsBg:'#3a4a3a',controlsBorder:'#6b8e6b',selectBg:'#2a3a2a',selectBorder:'#6b8e6b'}};
+
+        function applyTheme(n){const t=themes[n];if(!t)return;const s=(e,p)=>{const el=document.querySelectorAll(e);el.forEach(i=>Object.keys(p).forEach(k=>i.style[k]=p[k]))};document.body.style.background=t.bodyBg;document.body.style.color=t.textColor;s('.container',{background:t.containerBg,borderColor:t.containerBorder});s('header',{borderColor:t.containerBorder});s('h1',{color:t.textColor});s('.nav-link',{color:t.textColor});s('.theme-selector',{background:t.controlsBg,borderColor:t.controlsBorder});s('.theme-selector label',{color:t.textColor});s('.theme-selector select',{background:t.selectBg,color:t.textColor,borderColor:t.selectBorder});s('.game-info,.game-instructions',{color:t.secondaryText});s('.game-controls button',{background:t.selectBg,color:t.textColor,borderColor:t.controlsBorder});localStorage.setItem('siteTheme',n)}
+
+        const savedTheme=localStorage.getItem('siteTheme')||'light';const ts=document.getElementById('theme-select');if(ts){ts.value=savedTheme;ts.addEventListener('change',e=>applyTheme(e.target.value))}applyTheme(savedTheme);
+    </script>
+</body>
+</html>
