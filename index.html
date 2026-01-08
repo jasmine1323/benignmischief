@@ -28,17 +28,13 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 0;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            line-height: 14px;
-            color: rgba(0, 255, 0, 0.3);
+            z-index: 999;
+            display: none;
         }
 
-        .snake-segment {
+        .snake-pixel {
             position: absolute;
-            width: 14px;
-            height: 14px;
+            background: rgba(0, 255, 0, 0.6);
         }
 
         .container {
@@ -302,6 +298,11 @@
                 <p>game reviews</p>
             </a>
 
+            <a href="snake.html" class="nav-card snake-game-link">
+                <h3>[ SNAKE ]</h3>
+                <p>play the game</p>
+            </a>
+
             <a href="science.html" class="nav-card">
                 <h3>[ SCIENCE ]</h3>
                 <p>discoveries and ideas</p>
@@ -342,77 +343,19 @@
             document.getElementById('page-weight').textContent = sizeKB + ' KB';
         });
 
-        // Background Snake Game
-        const CELL_SIZE = 14;
+        // Background Snake Game - Simplified overlay version
+        const CELL_SIZE = 20;
         let bgSnake = [];
         let bgDirection = {x: 1, y: 0};
         let bgFood = null;
         let snakeLayer = null;
         let gridWidth, gridHeight;
-        let obstacles = [];
-        let snakeInitialized = false;
         let snakeEnabled = localStorage.getItem('snakeEnabled') !== 'false';
         let snakeIntervalId = null;
-
-        function toggleSnake() {
-            snakeEnabled = !snakeEnabled;
-            localStorage.setItem('snakeEnabled', snakeEnabled);
-            const btn = document.getElementById('snake-toggle');
-            btn.textContent = snakeEnabled ? '[SNAKE: ON]' : '[SNAKE: OFF]';
-            
-            if (snakeEnabled) {
-                if (!snakeInitialized) {
-                    initBgSnake();
-                }
-                const layer = document.getElementById('snake-layer');
-                if (layer) layer.style.display = 'block';
-                startSnakeLoop();
-            } else {
-                const layer = document.getElementById('snake-layer');
-                if (layer) layer.style.display = 'none';
-                stopSnakeLoop();
-            }
-        }
-
-        function startSnakeLoop() {
-            if (snakeIntervalId) return;
-            snakeIntervalId = setInterval(() => {
-                if (snakeInitialized && snakeEnabled) {
-                    randomTurn();
-                    bgGameLoop();
-                }
-            }, 150);
-        }
-
-        function stopSnakeLoop() {
-            if (snakeIntervalId) {
-                clearInterval(snakeIntervalId);
-                snakeIntervalId = null;
-            }
-        }
 
         function updateGrid() {
             gridWidth = Math.floor(window.innerWidth / CELL_SIZE);
             gridHeight = Math.floor(window.innerHeight / CELL_SIZE);
-            updateObstacles();
-        }
-
-        function updateObstacles() {
-            obstacles = [];
-            const container = document.querySelector('.container');
-            if (container) {
-                const rect = container.getBoundingClientRect();
-                const startX = Math.floor(rect.left / CELL_SIZE);
-                const endX = Math.floor(rect.right / CELL_SIZE);
-                const startY = Math.floor(rect.top / CELL_SIZE);
-                const endY = Math.floor(rect.bottom / CELL_SIZE);
-                
-                for (let y = startY; y <= endY; y++) {
-                    for (let x = startX; x <= endX; x++) {
-                        obstacles.push({x, y});
-                    }
-                }
-            }
         }
 
         function initBgSnake() {
@@ -423,76 +366,57 @@
             bgSnake = [{x: Math.floor(gridWidth / 4), y: Math.floor(gridHeight / 2)}];
             bgDirection = {x: 1, y: 0};
             spawnBgFood();
-            snakeInitialized = true;
-        }
-
-        function isObstacle(x, y) {
-            return obstacles.some(obs => obs.x === x && obs.y === y);
         }
 
         function spawnBgFood() {
-            let attempts = 0;
-            do {
-                bgFood = {
-                    x: Math.floor(Math.random() * gridWidth),
-                    y: Math.floor(Math.random() * gridHeight)
-                };
-                attempts++;
-            } while ((bgSnake.some(seg => seg.x === bgFood.x && seg.y === bgFood.y) || 
-                     isObstacle(bgFood.x, bgFood.y)) && attempts < 100);
+            bgFood = {
+                x: Math.floor(Math.random() * gridWidth),
+                y: Math.floor(Math.random() * gridHeight)
+            };
         }
 
         function drawBgSnake() {
-            if (!snakeLayer || !snakeInitialized) return;
+            if (!snakeLayer) return;
             snakeLayer.innerHTML = '';
             
             // Draw food
             if (bgFood) {
                 const foodEl = document.createElement('div');
-                foodEl.className = 'snake-segment';
-                foodEl.textContent = '*';
+                foodEl.className = 'snake-pixel';
+                foodEl.style.width = CELL_SIZE + 'px';
+                foodEl.style.height = CELL_SIZE + 'px';
                 foodEl.style.left = (bgFood.x * CELL_SIZE) + 'px';
                 foodEl.style.top = (bgFood.y * CELL_SIZE) + 'px';
+                foodEl.style.background = 'rgba(255, 0, 0, 0.6)';
                 snakeLayer.appendChild(foodEl);
             }
             
             // Draw snake
             bgSnake.forEach((seg, i) => {
                 const segEl = document.createElement('div');
-                segEl.className = 'snake-segment';
-                segEl.textContent = i === 0 ? '@' : 'o';
+                segEl.className = 'snake-pixel';
+                segEl.style.width = CELL_SIZE + 'px';
+                segEl.style.height = CELL_SIZE + 'px';
                 segEl.style.left = (seg.x * CELL_SIZE) + 'px';
                 segEl.style.top = (seg.y * CELL_SIZE) + 'px';
+                if (i === 0) {
+                    segEl.style.background = 'rgba(0, 255, 0, 0.8)';
+                }
                 snakeLayer.appendChild(segEl);
             });
         }
 
         function bgGameLoop() {
-            // Calculate new head
+            if (!bgSnake || bgSnake.length === 0) {
+                initBgSnake();
+                return;
+            }
+            
+            // Calculate new head with wrapping
             let newHead = {
                 x: (bgSnake[0].x + bgDirection.x + gridWidth) % gridWidth,
                 y: (bgSnake[0].y + bgDirection.y + gridHeight) % gridHeight
             };
-
-            // Check if hit obstacle - try to turn
-            if (isObstacle(newHead.x, newHead.y)) {
-                const directions = [
-                    {x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 1, y: 0}
-                ];
-                
-                for (let dir of directions) {
-                    const testPos = {
-                        x: (bgSnake[0].x + dir.x + gridWidth) % gridWidth,
-                        y: (bgSnake[0].y + dir.y + gridHeight) % gridHeight
-                    };
-                    if (!isObstacle(testPos.x, testPos.y) && 
-                        !bgSnake.some(seg => seg.x === testPos.x && seg.y === testPos.y)) {
-                        bgDirection = dir;
-                        newHead = testPos;
-                        break;
-                    }
-                }
-            }
 
             // Check self collision
             if (bgSnake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
@@ -512,30 +436,63 @@
             drawBgSnake();
         }
 
-        // Random direction changes
         function randomTurn() {
-            if (Math.random() < 0.05) {
-                const directions = [{x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 1, y: 0}];
-                const validDirs = directions.filter(dir => 
-                    !(dir.x === -bgDirection.x && dir.y === -bgDirection.y)
-                );
-                bgDirection = validDirs[Math.floor(Math.random() * validDirs.length)];
+            if (Math.random() < 0.08) {
+                const dirs = [{x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 1, y: 0}];
+                const valid = dirs.filter(d => !(d.x === -bgDirection.x && d.y === -bgDirection.y));
+                bgDirection = valid[Math.floor(Math.random() * valid.length)];
             }
         }
 
-        // Wait for page to load before starting snake
+        function toggleSnake() {
+            snakeEnabled = !snakeEnabled;
+            localStorage.setItem('snakeEnabled', snakeEnabled);
+            const btn = document.getElementById('snake-toggle');
+            btn.textContent = snakeEnabled ? '[SNAKE: ON]' : '[SNAKE: OFF]';
+            
+            const layer = document.getElementById('snake-layer');
+            if (snakeEnabled) {
+                if (!bgSnake.length) initBgSnake();
+                if (layer) layer.style.display = 'block';
+                startSnakeLoop();
+            } else {
+                if (layer) layer.style.display = 'none';
+                stopSnakeLoop();
+            }
+        }
+
+        function startSnakeLoop() {
+            if (snakeIntervalId) return;
+            if (!bgSnake || bgSnake.length === 0) {
+                initBgSnake();
+            }
+            snakeIntervalId = setInterval(() => {
+                randomTurn();
+                bgGameLoop();
+            }, 120);
+        }
+
+        function stopSnakeLoop() {
+            if (snakeIntervalId) {
+                clearInterval(snakeIntervalId);
+                snakeIntervalId = null;
+            }
+        }
+
+        // Initialize on page load
         window.addEventListener('load', function() {
-            snakeLayer = document.getElementById('snake-layer');
             const btn = document.getElementById('snake-toggle');
             btn.textContent = snakeEnabled ? '[SNAKE: ON]' : '[SNAKE: OFF]';
             
             if (snakeEnabled) {
                 initBgSnake();
+                const layer = document.getElementById('snake-layer');
+                if (layer) layer.style.display = 'block';
                 startSnakeLoop();
-            } else {
-                if (snakeLayer) snakeLayer.style.display = 'none';
             }
         });
+
+        window.addEventListener('resize', updateGrid);
 
         // Prevent arrow keys from scrolling the page
         window.addEventListener('keydown', function(e) {
@@ -543,12 +500,6 @@
                 e.preventDefault();
             }
         }, {passive: false});
-
-        window.addEventListener('resize', () => {
-            if (snakeInitialized) {
-                updateGrid();
-            }
-        });
 
         // Theme system - copy this block to each page
         const themes={light:{bodyBg:'#f5f5f5',containerBg:'#fff',containerBorder:'#333',textColor:'#000',secondaryText:'#666',controlsBg:'#f0f0f0',controlsBorder:'#333',selectBg:'white',selectBorder:'#333'},dark:{bodyBg:'#1a1a1a',containerBg:'#2a2a2a',containerBorder:'#fff',textColor:'#fff',secondaryText:'#ccc',controlsBg:'#3a3a3a',controlsBorder:'#fff',selectBg:'#2a2a2a',selectBorder:'#fff'},space:{bodyBg:'#0a0a1a',containerBg:'#1a1a2e',containerBorder:'#4a5f8f',textColor:'#a8c0ff',secondaryText:'#7a9ad8',controlsBg:'#252538',controlsBorder:'#4a5f8f',selectBg:'#1a1a2e',selectBorder:'#4a5f8f'},terminal:{bodyBg:'#2b0000',containerBg:'#3d0000',containerBorder:'#ff4444',textColor:'#ff6666',secondaryText:'#cc4444',controlsBg:'#4d0000',controlsBorder:'#ff4444',selectBg:'#3d0000',selectBorder:'#ff4444'},forest:{bodyBg:'#1a2a1a',containerBg:'#2a3a2a',containerBorder:'#6b8e6b',textColor:'#a8d8a8',secondaryText:'#7db87d',controlsBg:'#3a4a3a',controlsBorder:'#6b8e6b',selectBg:'#2a3a2a',selectBorder:'#6b8e6b'}};
