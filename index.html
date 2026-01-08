@@ -34,6 +34,7 @@
             background: transparent;
             user-select: none;
         }
+        
         .container {
             max-width: 720px;
             margin: 50px auto;
@@ -163,64 +164,7 @@
             font-size: 0.85em;
             color: #666;
         }
-
-        .snake-game {
-            margin: 40px 0;
-            padding: 20px;
-            background: #f0f0f0;
-            border: 1px solid #333;
-        }
-
-        .snake-game h2 {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .game-info {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-        }
-
-        .game-controls {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .game-controls button {
-            font-family: 'Courier New', Courier, monospace;
-            padding: 8px 15px;
-            margin: 0 5px;
-            border: 1px solid #333;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-
-        .game-controls button:hover {
-            background: #000;
-            color: #fff;
-        }
-
-        #game-board {
-            background: #000;
-            color: #0f0;
-            padding: 10px;
-            font-size: 0.8em;
-            line-height: 1;
-            text-align: center;
-            border: 2px solid #333;
-        }
-
-        .game-instructions {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 0.85em;
-            color: #666;
-        }
-
+        
         @media (max-width: 600px) {
             .nav-grid {
                 grid-template-columns: 1fr;
@@ -345,41 +289,29 @@
 
         const savedTheme=localStorage.getItem('siteTheme')||'light';const ts=document.getElementById('theme-select');if(ts){ts.value=savedTheme;ts.addEventListener('change',e=>applyTheme(e.target.value))}applyTheme(savedTheme);
         
-        /* ===== ASCII OVERLAY SNAKE ===== */
-        
+        /* ===== ASCII SNAKE GAME ===== */
+
         const overlay = document.getElementById("snake-overlay");
-        const toggle = document.getElementById("snake-toggle");
+        let cols, rows;
         
         const CHAR_W = 14;
         const CHAR_H = 14;
         
-        let cols, rows;
-        let snake, food;
-        let dir = { x: 1, y: 0 };
-        let nextDir = { x: 1, y: 0 };
-        let running = true;
-        let baseSpeed = 140;
-        let fastSpeed = 60;
-        let interval = baseSpeed;
-        let timer;
+        let snake, food, dir, running = true;
         
-        let keyHeld = false;
-        
-        /* --- Resize grid to viewport --- */
-        function resizeGrid() {
+        function resizeBoard() {
             cols = Math.floor(window.innerWidth / CHAR_W);
             rows = Math.floor(window.innerHeight / CHAR_H);
         }
-        window.addEventListener("resize", resizeGrid);
-        resizeGrid();
+        window.addEventListener("resize", resizeBoard);
+        resizeBoard();
         
-        /* --- Game state --- */
-        function resetSnake() {
+        function resetGame() {
             snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }];
             dir = { x: 1, y: 0 };
-            nextDir = { x: 1, y: 0 };
             spawnFood();
         }
+        resetGame();
         
         function spawnFood() {
             do {
@@ -390,48 +322,27 @@
             } while (snake.some(s => s.x === food.x && s.y === food.y));
         }
         
-        resetSnake();
-        
-        /* --- Controls (hold = faster) --- */
         document.addEventListener("keydown", e => {
-            keyHeld = true;
-        
-            if (e.key === "ArrowUp" && dir.y === 0) nextDir = { x: 0, y: -1 };
-            if (e.key === "ArrowDown" && dir.y === 0) nextDir = { x: 0, y: 1 };
-            if (e.key === "ArrowLeft" && dir.x === 0) nextDir = { x: -1, y: 0 };
-            if (e.key === "ArrowRight" && dir.x === 0) nextDir = { x: 1, y: 0 };
+            if (e.key === "ArrowUp" && dir.y === 0) dir = { x: 0, y: -1 };
+            if (e.key === "ArrowDown" && dir.y === 0) dir = { x: 0, y: 1 };
+            if (e.key === "ArrowLeft" && dir.x === 0) dir = { x: -1, y: 0 };
+            if (e.key === "ArrowRight" && dir.x === 0) dir = { x: 1, y: 0 };
         });
         
-        document.addEventListener("keyup", () => {
-            keyHeld = false;
-        });
-        
-        /* --- Toggle snake on/off --- */
-        toggle.addEventListener("click", () => {
-            running = !running;
-            overlay.style.display = running ? "block" : "none";
-            toggle.textContent = running ? "[ Snake : On ]" : "[ Snake : Off ]";
-        });
-        
-        /* --- Main loop --- */
         function tick() {
             if (!running) return;
         
-            dir = nextDir;
-        
-            let head = {
+            const head = {
                 x: snake[0].x + dir.x,
                 y: snake[0].y + dir.y
             };
         
-            /* --- Wrap edges (portal) --- */
-            if (head.x < 0) head.x = cols - 1;
-            if (head.x >= cols) head.x = 0;
-            if (head.y < 0) head.y = rows - 1;
-            if (head.y >= rows) head.y = 0;
-        
-            if (snake.some(s => s.x === head.x && s.y === head.y)) {
-                resetSnake();
+            if (
+                head.x < 0 || head.y < 0 ||
+                head.x >= cols || head.y >= rows ||
+                snake.some(s => s.x === head.x && s.y === head.y)
+            ) {
+                resetGame();
                 return;
             }
         
@@ -446,28 +357,21 @@
             draw();
         }
         
-        /* --- Render --- */
         function draw() {
-            let out = "";
+            let buffer = "";
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
-                    if (snake[0].x === x && snake[0].y === y) out += "@";
-                    else if (snake.slice(1).some(s => s.x === x && s.y === y)) out += "o";
-                    else if (food.x === x && food.y === y) out += "*";
-                    else out += " ";
+                    if (snake[0].x === x && snake[0].y === y) buffer += "@";
+                    else if (snake.slice(1).some(s => s.x === x && s.y === y)) buffer += "o";
+                    else if (food.x === x && food.y === y) buffer += "*";
+                    else buffer += " ";
                 }
-                out += "\n";
+                buffer += "\n";
             }
-            overlay.textContent = out;
+            overlay.textContent = buffer;
         }
         
-        /* --- Adaptive speed loop --- */
-        function loop() {
-            clearInterval(timer);
-            timer = setInterval(tick, keyHeld ? fastSpeed : baseSpeed);
-        }
-        
-        setInterval(loop, 50);
+        setInterval(tick, 120);
 
     </script>
 </body>
