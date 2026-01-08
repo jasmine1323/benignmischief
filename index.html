@@ -28,15 +28,17 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 999;
+            z-index: 0;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 1.2em;
-            font-weight: bold;
+            font-size: 14px;
+            line-height: 14px;
+            color: rgba(0, 255, 0, 0.3);
         }
 
-        .snake-char {
+        .snake-segment {
             position: absolute;
-            color: #00ff00;
+            width: 14px;
+            height: 14px;
         }
 
         .container {
@@ -101,20 +103,13 @@
             margin-right: 10px;
         }
 
-        .theme-selector select,
-        .theme-selector button {
+        .theme-selector select {
             padding: 5px 10px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9em;
             border: 1px solid #333;
             background: white;
             cursor: pointer;
-            margin: 0 5px;
-        }
-
-        .theme-selector button:hover {
-            background: #000;
-            color: #fff;
         }
 
         .nav-grid {
@@ -264,7 +259,6 @@
                 <option value="terminal">terminal</option>
                 <option value="forest">forest</option>
             </select>
-            <button id="snake-toggle" onclick="toggleSnake()">[SNAKE: ON]</button>
         </div>
 
         <div class="about">
@@ -285,24 +279,19 @@
 └─ <a href="other-crafts.html">[ Other Crafts ]</a></div>
             </div>
 
-            <a href="memes.html" class="nav-card">
-                <h3>[ LINKS ]</h3>
+            <div class="nav-card">
+                <a href="links.html" style="text-decoration: none; color: inherit; display: block;">
+                    <h3>[ LINKS ]</h3>
                 </a>
-                <div class="links-tree">├─ <a href="links.html">[ Links ]</a>
-├─ <a href="games.html">[ Games ]</a>
-├─ <a href="content.html">[ Content ]</a>
-├─ <a href="memes.html">[ Memes ]</a>
-└─ <a href="physics.html">[ Physics ]</a></div>
+                <div class="art-tree">├─ <a href="links-games.html">[ Games ]</a>
+├─ <a href="links-content.html">[ Content ]</a>
+├─ <a href="links-memes.html">[ Memes ]</a>
+└─ <a href="links-physics.html">[ Physics ]</a></div>
             </div>
 
             <a href="games.html" class="nav-card">
                 <h3>[ GAMES ]</h3>
                 <p>game reviews</p>
-            </a>
-
-            <a href="snake.html" class="nav-card snake-game-link">
-                <h3>[ SNAKE ]</h3>
-                <p>play the game</p>
             </a>
 
             <a href="science.html" class="nav-card">
@@ -314,11 +303,22 @@
                 <h3>[ LIBRARY ]</h3>
                 <p>book collection</p>
             </a>
+        </div>
 
-            <a href="snake.html" class="nav-card snake-game-link">
-                <h3>[ SNAKE ]</h3>
-                <p>play the game</p>
-            </a>
+        <div class="snake-game">
+            <h2>[ SNAKE ]</h2>
+            <div class="game-info">
+                <span>Score: <span id="score">0</span></span>
+                <span style="margin-left: 20px;">High Score: <span id="high-score">0</span></span>
+            </div>
+            <div class="game-controls">
+                <button onclick="startGame()">[START]</button>
+                <button onclick="pauseGame()">[PAUSE]</button>
+            </div>
+            <pre id="game-board"></pre>
+            <div class="game-instructions">
+                Use arrow keys or WASD to move
+            </div>
         </div>
 
         <footer>
@@ -345,178 +345,164 @@
             document.getElementById('page-weight').textContent = sizeKB + ' KB';
         });
 
-        // Background Snake Game - Simplified overlay version
-        const CELL_SIZE = 20;
-        let bgSnake = [];
-        let bgDirection = {x: 1, y: 0};
-        let bgFood = null;
-        let snakeLayer = null;
-        let gridWidth, gridHeight;
-        let snakeEnabled = localStorage.getItem('snakeEnabled') !== 'false';
-        let snakeIntervalId = null;
+        // Snake Game
+        const BOARD_WIDTH = 30;
+        const BOARD_HEIGHT = 15;
+        let snake = [{x: 15, y: 7}];
+        let direction = {x: 1, y: 0};
+        let nextDirection = {x: 1, y: 0};
+        let food = {x: 20, y: 7};
+        let score = 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let gameRunning = false;
+        let gameInterval;
 
-        function updateGrid() {
-            gridWidth = Math.floor(window.innerWidth / CELL_SIZE);
-            gridHeight = Math.floor(window.innerHeight / CELL_SIZE);
-        }
+        document.getElementById('high-score').textContent = highScore;
 
-        function initBgSnake() {
-            snakeLayer = document.getElementById('snake-layer');
-            if (!snakeLayer) return;
-            
-            updateGrid();
-            bgSnake = [{x: Math.floor(gridWidth / 4), y: Math.floor(gridHeight / 2)}];
-            bgDirection = {x: 1, y: 0};
-            spawnBgFood();
-        }
-
-        function spawnBgFood() {
-            bgFood = {
-                x: Math.floor(Math.random() * gridWidth),
-                y: Math.floor(Math.random() * gridHeight)
-            };
-        }
-
-        function drawBgSnake() {
-            if (!snakeLayer) return;
-            snakeLayer.innerHTML = '';
-            
-            // Draw food
-            if (bgFood) {
-                const foodEl = document.createElement('div');
-                foodEl.className = 'snake-pixel';
-                foodEl.style.width = CELL_SIZE + 'px';
-                foodEl.style.height = CELL_SIZE + 'px';
-                foodEl.style.left = (bgFood.x * CELL_SIZE) + 'px';
-                foodEl.style.top = (bgFood.y * CELL_SIZE) + 'px';
-                foodEl.style.background = 'rgba(255, 0, 0, 0.6)';
-                snakeLayer.appendChild(foodEl);
-            }
-            
-            // Draw snake
-            bgSnake.forEach((seg, i) => {
-                const segEl = document.createElement('div');
-                segEl.className = 'snake-pixel';
-                segEl.style.width = CELL_SIZE + 'px';
-                segEl.style.height = CELL_SIZE + 'px';
-                segEl.style.left = (seg.x * CELL_SIZE) + 'px';
-                segEl.style.top = (seg.y * CELL_SIZE) + 'px';
-                if (i === 0) {
-                    segEl.style.background = 'rgba(0, 255, 0, 0.8)';
+        function drawBoard() {
+            let board = '';
+            for (let y = 0; y < BOARD_HEIGHT; y++) {
+                for (let x = 0; x < BOARD_WIDTH; x++) {
+                    // Check if snake head
+                    if (snake[0].x === x && snake[0].y === y) {
+                        board += '@';
+                    }
+                    // Check if snake body
+                    else if (snake.slice(1).some(seg => seg.x === x && seg.y === y)) {
+                        board += 'o';
+                    }
+                    // Check if food
+                    else if (food.x === x && food.y === y) {
+                        board += '*';
+                    }
+                    else {
+                        board += '.';
+                    }
                 }
-                snakeLayer.appendChild(segEl);
-            });
+                board += '\n';
+            }
+            document.getElementById('game-board').textContent = board;
         }
 
-        function bgGameLoop() {
-            if (!bgSnake || bgSnake.length === 0) {
-                initBgSnake();
+        function spawnFood() {
+            do {
+                food = {
+                    x: Math.floor(Math.random() * BOARD_WIDTH),
+                    y: Math.floor(Math.random() * BOARD_HEIGHT)
+                };
+            } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            direction = nextDirection;
+
+            // Calculate new head position
+            const newHead = {
+                x: snake[0].x + direction.x,
+                y: snake[0].y + direction.y
+            };
+
+            // Check wall collision
+            if (newHead.x < 0 || newHead.x >= BOARD_WIDTH || 
+                newHead.y < 0 || newHead.y >= BOARD_HEIGHT) {
+                gameOver();
                 return;
             }
-            
-            // Calculate new head with wrapping
-            let newHead = {
-                x: (bgSnake[0].x + bgDirection.x + gridWidth) % gridWidth,
-                y: (bgSnake[0].y + bgDirection.y + gridHeight) % gridHeight
-            };
 
             // Check self collision
-            if (bgSnake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
-                initBgSnake();
+            if (snake.some(seg => seg.x === newHead.x && seg.y === newHead.y)) {
+                gameOver();
                 return;
             }
 
-            bgSnake.unshift(newHead);
+            // Add new head
+            snake.unshift(newHead);
 
-            // Check food
-            if (bgFood && newHead.x === bgFood.x && newHead.y === bgFood.y) {
-                spawnBgFood();
+            // Check food collision
+            if (newHead.x === food.x && newHead.y === food.y) {
+                score++;
+                document.getElementById('score').textContent = score;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('snakeHighScore', highScore);
+                    document.getElementById('high-score').textContent = highScore;
+                }
+                spawnFood();
             } else {
-                bgSnake.pop();
+                // Remove tail if no food eaten
+                snake.pop();
             }
 
-            drawBgSnake();
+            drawBoard();
         }
 
-        function randomTurn() {
-            if (Math.random() < 0.08) {
-                const dirs = [{x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 1, y: 0}];
-                const valid = dirs.filter(d => !(d.x === -bgDirection.x && d.y === -bgDirection.y));
-                bgDirection = valid[Math.floor(Math.random() * valid.length)];
-            }
-        }
-
-        function toggleSnake() {
-            snakeEnabled = !snakeEnabled;
-            localStorage.setItem('snakeEnabled', snakeEnabled);
-            const btn = document.getElementById('snake-toggle');
-            btn.textContent = snakeEnabled ? '[SNAKE: ON]' : '[SNAKE: OFF]';
+        function startGame() {
+            if (gameRunning) return;
             
-            const layer = document.getElementById('snake-layer');
-            if (snakeEnabled) {
-                if (!bgSnake.length) initBgSnake();
-                if (layer) layer.style.display = 'block';
-                startSnakeLoop();
-            } else {
-                if (layer) layer.style.display = 'none';
-                stopSnakeLoop();
-            }
+            snake = [{x: 15, y: 7}];
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            score = 0;
+            document.getElementById('score').textContent = score;
+            spawnFood();
+            gameRunning = true;
+            
+            drawBoard();
+            gameInterval = setInterval(gameLoop, 150);
         }
 
-        function startSnakeLoop() {
-            if (snakeIntervalId) return;
-            if (!bgSnake || bgSnake.length === 0) {
-                initBgSnake();
-            }
-            snakeIntervalId = setInterval(() => {
-                randomTurn();
-                bgGameLoop();
-            }, 120);
+        function pauseGame() {
+            gameRunning = false;
+            clearInterval(gameInterval);
         }
 
-        function stopSnakeLoop() {
-            if (snakeIntervalId) {
-                clearInterval(snakeIntervalId);
-                snakeIntervalId = null;
-            }
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            alert('Game Over! Score: ' + score);
         }
 
-        // Initialize on page load
-        window.addEventListener('load', function() {
-            snakeLayer = document.getElementById('snake-layer');
-            const btn = document.getElementById('snake-toggle');
-            
-            if (!snakeLayer) {
-                console.error('Snake layer not found!');
-                return;
-            }
-            
-            btn.textContent = snakeEnabled ? '[SNAKE: ON]' : '[SNAKE: OFF]';
-            
-            if (snakeEnabled) {
-                console.log('Initializing snake...');
-                snakeLayer.style.display = 'block';
-                initBgSnake();
-                drawBgSnake(); // Draw immediately
-                startSnakeLoop();
-            } else {
-                snakeLayer.style.display = 'none';
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (direction.y === 0) nextDirection = {x: 0, y: -1};
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (direction.y === 0) nextDirection = {x: 0, y: 1};
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (direction.x === 0) nextDirection = {x: -1, y: 0};
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (direction.x === 0) nextDirection = {x: 1, y: 0};
+                    e.preventDefault();
+                    break;
             }
         });
 
-        window.addEventListener('resize', updateGrid);
-
-        // Prevent arrow keys from scrolling the page
-        window.addEventListener('keydown', function(e) {
-            if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-            }
-        }, {passive: false});
+        // Initialize board
+        drawBoard();
 
         // Theme system - copy this block to each page
         const themes={light:{bodyBg:'#f5f5f5',containerBg:'#fff',containerBorder:'#333',textColor:'#000',secondaryText:'#666',controlsBg:'#f0f0f0',controlsBorder:'#333',selectBg:'white',selectBorder:'#333'},dark:{bodyBg:'#1a1a1a',containerBg:'#2a2a2a',containerBorder:'#fff',textColor:'#fff',secondaryText:'#ccc',controlsBg:'#3a3a3a',controlsBorder:'#fff',selectBg:'#2a2a2a',selectBorder:'#fff'},space:{bodyBg:'#0a0a1a',containerBg:'#1a1a2e',containerBorder:'#4a5f8f',textColor:'#a8c0ff',secondaryText:'#7a9ad8',controlsBg:'#252538',controlsBorder:'#4a5f8f',selectBg:'#1a1a2e',selectBorder:'#4a5f8f'},terminal:{bodyBg:'#2b0000',containerBg:'#3d0000',containerBorder:'#ff4444',textColor:'#ff6666',secondaryText:'#cc4444',controlsBg:'#4d0000',controlsBorder:'#ff4444',selectBg:'#3d0000',selectBorder:'#ff4444'},forest:{bodyBg:'#1a2a1a',containerBg:'#2a3a2a',containerBorder:'#6b8e6b',textColor:'#a8d8a8',secondaryText:'#7db87d',controlsBg:'#3a4a3a',controlsBorder:'#6b8e6b',selectBg:'#2a3a2a',selectBorder:'#6b8e6b'}};
 
-        function applyTheme(n){const t=themes[n];if(!t)return;const s=(e,p)=>{const el=document.querySelectorAll(e);el.forEach(i=>Object.keys(p).forEach(k=>i.style[k]=p[k]))};document.body.style.background=t.bodyBg;document.body.style.color=t.textColor;s('.container',{background:t.containerBg,borderColor:t.containerBorder});s('header',{borderColor:t.containerBorder});s('h1,.modal-title',{color:t.textColor});s('.nav-link,.modal-close',{color:t.textColor});s('.controls,.theme-selector,.about,.modal-annotations',{background:t.controlsBg,borderColor:t.controlsBorder});s('.controls label,.theme-selector label,.about h2,.modal-annotations h3',{color:t.textColor});s('.controls select,.theme-selector select',{background:t.selectBg,color:t.textColor,borderColor:t.selectBorder});s('.subtitle,.about p,.modal-author,.modal-details,.modal-annotations p',{color:t.secondaryText});s('.nav-card',{background:t.controlsBg,borderColor:t.controlsBorder,color:t.textColor});s('.nav-card p',{color:t.secondaryText});s('footer',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details strong',{color:t.textColor});const m=document.querySelector('.modal');if(m){const h=t.bodyBg,r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);m.style.background=`rgba(${r},${g},${b},0.9)`}const mc=document.querySelector('.modal-content');if(mc){mc.style.background=t.containerBg;mc.style.borderColor=t.containerBorder;mc.style.color=t.textColor}localStorage.setItem('siteTheme',n);if(snakeInitialized)updateObstacles()}
+        function applyTheme(n){const t=themes[n];if(!t)return;const s=(e,p)=>{const el=document.querySelectorAll(e);el.forEach(i=>Object.keys(p).forEach(k=>i.style[k]=p[k]))};document.body.style.background=t.bodyBg;document.body.style.color=t.textColor;s('.container',{background:t.containerBg,borderColor:t.containerBorder});s('header',{borderColor:t.containerBorder});s('h1,.modal-title',{color:t.textColor});s('.nav-link,.modal-close',{color:t.textColor});s('.controls,.theme-selector,.about,.modal-annotations,.snake-game',{background:t.controlsBg,borderColor:t.controlsBorder});s('.controls label,.theme-selector label,.about h2,.modal-annotations h3,.snake-game h2',{color:t.textColor});s('.controls select,.theme-selector select',{background:t.selectBg,color:t.textColor,borderColor:t.selectBorder});s('.subtitle,.about p,.modal-author,.modal-details,.modal-annotations p,.game-info,.game-instructions',{color:t.secondaryText});s('.nav-card',{background:t.controlsBg,borderColor:t.controlsBorder,color:t.textColor});s('.nav-card p',{color:t.secondaryText});s('footer',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details',{borderColor:t.controlsBorder,color:t.secondaryText});s('.modal-details strong',{color:t.textColor});s('.game-controls button',{background:t.selectBg,color:t.textColor,borderColor:t.controlsBorder});const m=document.querySelector('.modal');if(m){const h=t.bodyBg,r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);m.style.background=`rgba(${r},${g},${b},0.9)`}const mc=document.querySelector('.modal-content');if(mc){mc.style.background=t.containerBg;mc.style.borderColor=t.containerBorder;mc.style.color=t.textColor}localStorage.setItem('siteTheme',n)}
 
         const savedTheme=localStorage.getItem('siteTheme')||'light';const ts=document.getElementById('theme-select');if(ts){ts.value=savedTheme;ts.addEventListener('change',e=>applyTheme(e.target.value))}applyTheme(savedTheme);
     </script>
