@@ -548,6 +548,10 @@
             toggle.addEventListener("click", () => {
                 snakeEnabled = !snakeEnabled;
                 overlay.style.display = snakeEnabled ? "block" : "none";
+                const touchControls = document.getElementById('touch-controls');
+                if (touchControls) {
+                    touchControls.style.display = snakeEnabled ? "block" : "none";
+                }
                 toggle.textContent = snakeEnabled
                     ? "[ Snake : On ]"
                     : "[ Snake : Off ]";
