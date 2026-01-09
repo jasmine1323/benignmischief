@@ -546,13 +546,18 @@
         let snakeEnabled = true;
     
         toggle.addEventListener("click", function() {
+            console.log("Toggle clicked! Current state:", snakeEnabled);
             snakeEnabled = !snakeEnabled;
+            console.log("New state:", snakeEnabled);
+            
             if (snakeEnabled) {
                 overlay.style.display = "block";
                 toggle.textContent = "[ Snake : On ]";
+                console.log("Set to ON");
             } else {
                 overlay.style.display = "none";
                 toggle.textContent = "[ Snake : Off ]";
+                console.log("Set to OFF");
             }
         });
         
