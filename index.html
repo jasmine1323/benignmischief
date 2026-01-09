@@ -548,40 +548,49 @@
         const overlay = document.getElementById("snake-overlay");
         const toggle = document.getElementById("snake-toggle");
     
-        if (!overlay || !toggle) return;
+        if (!overlay || !toggle) {
+            console.error("Missing overlay or toggle element!");
+            return;
+        }
     
         let snakeEnabled = true;
+        
+        console.log("Snake game initialized. Enabled:", snakeEnabled);
     
         toggle.addEventListener("click", function(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            console.log("Toggle clicked! Current state:", snakeEnabled);
+            console.log("=== TOGGLE CLICKED ===");
+            console.log("Before toggle - snakeEnabled:", snakeEnabled);
             snakeEnabled = !snakeEnabled;
-            console.log("New state:", snakeEnabled);
+            console.log("After toggle - snakeEnabled:", snakeEnabled);
             
             // Force clear and rewrite
             toggle.innerHTML = "";
             
             if (snakeEnabled) {
+                console.log("Turning snake ON");
                 overlay.style.display = "block";
                 overlay.style.visibility = "visible";
                 setTimeout(() => {
                     toggle.innerHTML = "[ Snake : On ]";
+                    console.log("Text set to ON");
                 }, 10);
-                console.log("Set to ON");
             } else {
+                console.log("Turning snake OFF");
                 overlay.style.display = "none";
                 overlay.style.visibility = "hidden";
                 setTimeout(() => {
                     toggle.innerHTML = "[ Snake : Off ]";
+                    console.log("Text set to OFF");
                 }, 10);
-                console.log("Set to OFF");
             }
-            console.log("Overlay display:", overlay.style.display);
             
             setTimeout(() => {
-                console.log("Toggle text after 50ms:", toggle.textContent);
+                console.log("Final state - Overlay display:", overlay.style.display);
+                console.log("Final state - Toggle text:", toggle.textContent);
+                console.log("Final state - snakeEnabled:", snakeEnabled);
             }, 50);
         });
         
