@@ -431,9 +431,7 @@
                 <span id="speed-value">5x</span>
             </div>
 
-            <span style="margin-left:20px; cursor:pointer;" id="snake-toggle">
-                [ Snake : On ]
-            </span>
+            <span id="snake-toggle">[ Snake : On ]</span>
         </div>
 
         <div class="about">
@@ -542,25 +540,20 @@
         const overlay = document.getElementById("snake-overlay");
         const toggle = document.getElementById("snake-toggle");
     
-        if (!overlay) return;
+        if (!overlay || !toggle) return;
     
         let snakeEnabled = true;
     
-        if (toggle) {
-            toggle.addEventListener("click", () => {
-                snakeEnabled = !snakeEnabled;
-                overlay.style.display = snakeEnabled ? "block" : "none";
-                toggle.textContent = snakeEnabled
-                    ? "[ Snake : On ]"
-                    : "[ Snake : Off ]";
-                    
-                // // Also toggle touch controls
-                // const touchControls = document.getElementById('touch-controls');
-                // if (touchControls) {
-                //     touchControls.style.display = snakeEnabled ? "block" : "none";
-                // }
-            });
-        }
+        toggle.addEventListener("click", function() {
+            snakeEnabled = !snakeEnabled;
+            if (snakeEnabled) {
+                overlay.style.display = "block";
+                toggle.textContent = "[ Snake : On ]";
+            } else {
+                overlay.style.display = "none";
+                toggle.textContent = "[ Snake : Off ]";
+            }
+        });
         
         let cols, rows;
         
