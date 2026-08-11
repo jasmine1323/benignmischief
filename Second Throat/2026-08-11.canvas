@@ -1,0 +1,8 @@
+{
+	"nodes":[
+		{"id":"69dea619013a985e","type":"file","file":"IMG_6446_63D4F946.jpg","x":-280,"y":-320,"width":338,"height":400},
+		{"id":"9835dcaf5cae2896","type":"file","file":"IMG_6447_A27FD8CF.jpg","x":100,"y":-320,"width":300,"height":400},
+		{"id":"cbe6b4a1dca367ff","type":"file","file":"IMG_7643_5646D9CB_df99c69b58f94c9c83d3caa234fc25ad.png","x":440,"y":-320,"width":225,"height":400}
+	],
+	"edges":[]
+}
