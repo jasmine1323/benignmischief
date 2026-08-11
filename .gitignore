@@ -2,8 +2,8 @@
 .DS_Store
 
 # Obsidian local workspace state (keep notes, ignore churny UI state)
-Second Throat/.obsidian/workspace*.json
-Second Throat/.obsidian/cache
+gardens/**/.obsidian/workspace*.json
+gardens/**/.obsidian/cache
 
 # Quartz build artifacts (built in CI, not committed)
 quartz/public/

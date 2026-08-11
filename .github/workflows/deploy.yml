@@ -1,4 +1,4 @@
-name: Deploy site (HTML + Quartz garden) to GitHub Pages
+name: Deploy site (HTML + Quartz gardens) to GitHub Pages
 
 on:
   push:
@@ -42,35 +42,37 @@ jobs:
         working-directory: quartz
         run: npm ci
 
-      - name: Build Quartz garden (from the "Second Throat" vault)
+      - name: Build all gardens (everything under gardens/)
         working-directory: quartz
-        run: npx quartz build -d "../Second Throat" -o public
+        run: npx quartz build -d "../gardens" -o public
 
-      - name: Assemble site (root HTML at /, Quartz garden at /garden)
+      - name: Assemble site (root HTML at /, gardens at /gardens)
         run: |
           set -euo pipefail
           rm -rf dist
           mkdir -p dist
-          # Copy the hand-written site to the root, excluding tooling and the raw vault.
+          # Copy the hand-written site to the root, excluding tooling and the
+          # raw gardens source (the built version is placed under /gardens below).
           rsync -a \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'quartz' \
+            --exclude 'scripts' \
+            --exclude 'gardens' \
             --exclude 'dist' \
             --exclude '.DS_Store' \
-            --exclude 'Second Throat' \
             ./ dist/
-          # Place the built garden under /garden
-          mkdir -p dist/garden
-          cp -R quartz/public/. dist/garden/
+          # Place the built gardens under /gardens
+          mkdir -p dist/gardens
+          cp -R quartz/public/. dist/gardens/
           # Sanity checks
-          test -f dist/index.html
-          test -f dist/CNAME
-          test -f dist/garden/index.html
-          echo "Assembled site:"
+          test -f dist/index.html          # hand-written homepage
+          test -f dist/CNAME               # custom domain preserved
+          test -f dist/gardens/index.html  # gardens landing page
+          echo "Assembled site root:"
           ls dist
-          echo "Garden:"
-          ls dist/garden | head
+          echo "Gardens:"
+          ls dist/gardens | head -30
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

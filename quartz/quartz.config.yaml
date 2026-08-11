@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: benign mischief · garden
+  pageTitle: benign mischief · gardens
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
   analytics: null
   locale: en-US
-  baseUrl: www.benignmischief.com/garden
+  baseUrl: www.benignmischief.com/gardens
   ignorePatterns:
     - private
     - templates
