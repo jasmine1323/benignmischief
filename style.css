@@ -1,0 +1,387 @@
+/* =========================================================================
+   benign mischief — Arcane Terminal
+   a shared design system. link with: <link rel="stylesheet" href="/style.css">
+   phosphor-on-black CRT · monospace · alchemical glyphs
+   ========================================================================= */
+
+:root {
+  --bg:          #05080600;      /* set on body directly; kept for reference */
+  --bg-solid:    #060907;
+  --bg-panel:    rgba(10, 16, 12, 0.90);
+  --phos:        #57f08a;        /* primary phosphor green */
+  --phos-bright: #8dffb4;
+  --phos-dim:    #2f9d5b;
+  --phos-faint:  rgba(87, 240, 138, 0.10);
+  --amber:       #ffb454;        /* accent / glyphs / highlights */
+  --amber-dim:   #b9812f;
+  --ink:         #05080a;         /* text color when on a phosphor fill */
+  --text:        #b9f5cf;         /* soft phosphor-white body text */
+  --text-dim:    #6bbf8e;
+  --line:        rgba(87, 240, 138, 0.28);
+  --line-faint:  rgba(87, 240, 138, 0.14);
+  --glow:        0 0 6px rgba(87, 240, 138, 0.55);
+  --glow-amber:  0 0 8px rgba(255, 180, 84, 0.55);
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code",
+          Menlo, Consolas, "Courier New", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scrollbar-color: var(--phos-dim) var(--bg-solid); }
+
+body {
+  font-family: var(--mono);
+  line-height: 1.6;
+  color: var(--text);
+  background:
+    radial-gradient(120% 120% at 50% 0%, #0b140e 0%, #060907 55%, #030503 100%)
+      fixed;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  text-shadow: 0 0 1px rgba(87, 240, 138, 0.25);
+}
+
+/* selection */
+::selection { background: var(--phos); color: var(--ink); text-shadow: none; }
+
+/* ===== CRT scanlines + faint flicker (over everything, non-interactive) ==== */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  opacity: 0.45;
+  animation: flicker 4.5s infinite steps(60);
+}
+@keyframes flicker {
+  0%, 97%, 100% { opacity: 0.42; }
+  98%           { opacity: 0.30; }
+  99%           { opacity: 0.55; }
+}
+
+/* ===== ASCII snake — lives behind the terminal window ===================== */
+#snake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  white-space: pre;
+  font-size: 18px;
+  line-height: 18px;
+  color: rgba(87, 240, 138, 0.22);
+  text-shadow: 0 0 6px rgba(87, 240, 138, 0.35);
+  background: transparent;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* ===== the terminal window ================================================ */
+.container {
+  max-width: 760px;
+  margin: 48px auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  position: relative;
+  z-index: 2;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 24px 70px rgba(0, 0, 0, 0.6),
+    inset 0 0 60px rgba(87, 240, 138, 0.04);
+  backdrop-filter: blur(2px);
+}
+
+/* window title bar */
+.window-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-faint);
+  font-size: 0.78em;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.window-bar .dots { display: flex; gap: 7px; }
+.window-bar .dots i {
+  width: 11px; height: 11px; border-radius: 50%;
+  display: inline-block;
+  border: 1px solid var(--phos-dim);
+  box-shadow: var(--glow);
+}
+.window-bar .dots i:nth-child(2) { border-color: var(--amber-dim); box-shadow: var(--glow-amber); }
+.window-bar .path { margin-left: auto; opacity: 0.75; }
+
+.window-body { padding: 30px 34px 34px; }
+
+/* ===== header / boot sequence ============================================= */
+header { text-align: left; margin-bottom: 26px; }
+
+.boot {
+  font-size: 0.82em;
+  color: var(--phos-dim);
+  margin-bottom: 20px;
+  border-left: 2px solid var(--line-faint);
+  padding-left: 14px;
+}
+.boot-line { opacity: 0; animation: bootIn 0.35s ease forwards; white-space: pre-wrap; }
+.boot-line:nth-child(1) { animation-delay: 0.10s; }
+.boot-line:nth-child(2) { animation-delay: 0.45s; }
+.boot-line:nth-child(3) { animation-delay: 0.80s; }
+.boot-line:nth-child(4) { animation-delay: 1.15s; }
+@keyframes bootIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+.boot .ok    { color: var(--phos); text-shadow: var(--glow); }
+.boot .glyph { color: var(--amber); text-shadow: var(--glow-amber); }
+
+h1, .title {
+  font-size: clamp(1.9em, 6vw, 3em);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--phos-bright);
+  text-shadow: 0 0 10px rgba(87, 240, 138, 0.6), 0 0 30px rgba(87, 240, 138, 0.25);
+  line-height: 1.05;
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-size: 0.92em;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* blinking block cursor */
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.05em;
+  vertical-align: text-bottom;
+  background: var(--phos);
+  box-shadow: var(--glow);
+  margin-left: 2px;
+  animation: blink 1.05s steps(1) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+/* ===== about / prose panels =============================================== */
+.about {
+  margin: 24px 0;
+  padding: 16px 18px;
+  background: var(--phos-faint);
+  border: 1px solid var(--line-faint);
+  border-radius: 6px;
+  color: var(--text);
+}
+.about h2 {
+  font-size: 0.8em;
+  letter-spacing: 0.22em;
+  color: var(--amber);
+  text-shadow: var(--glow-amber);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.about p { color: var(--text-dim); font-size: 0.92em; }
+.about a { color: var(--phos); text-decoration: none; border-bottom: 1px dotted var(--phos-dim); }
+.about a:hover { color: var(--phos-bright); text-shadow: var(--glow); }
+
+/* ===== nav — a directory of entries ======================================= */
+.section-label {
+  font-size: 0.72em;
+  letter-spacing: 0.28em;
+  color: var(--text-dim);
+  margin: 30px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-faint);
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.entry {
+  display: block;
+  background: rgba(87, 240, 138, 0.03);
+  border: 1px solid var(--line-faint);
+  border-radius: 6px;
+  padding: 16px 16px 14px;
+  text-decoration: none;
+  color: var(--text);
+  position: relative;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s, transform 0.18s;
+}
+.entry::before {
+  /* left accent bar that lights up on hover */
+  content: "";
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 2px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+.entry:hover, .entry:focus-visible {
+  border-color: var(--phos);
+  background: var(--phos-faint);
+  box-shadow: var(--glow), inset 0 0 24px rgba(87, 240, 138, 0.05);
+  transform: translateY(-1px);
+  outline: none;
+}
+.entry:hover::before, .entry:focus-visible::before {
+  background: var(--phos);
+  box-shadow: var(--glow);
+}
+
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+.entry-glyph { color: var(--amber); text-shadow: var(--glow-amber); font-size: 1.05em; }
+.entry-name {
+  font-size: 1.15em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--phos-bright);
+}
+.entry:hover .entry-name { text-shadow: var(--glow); }
+.entry-desc { color: var(--text-dim); font-size: 0.82em; margin-top: 6px; }
+
+.entry-tree {
+  margin-top: 10px;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: var(--text-dim);
+  white-space: pre;
+}
+.entry-tree a { color: var(--text-dim); text-decoration: none; }
+.entry-tree a:hover { color: var(--phos-bright); text-shadow: var(--glow); }
+
+.entry.pulse .entry-glyph { animation: softpulse 2.4s ease-in-out infinite; }
+@keyframes softpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* ===== snake controls ===================================================== */
+.controls {
+  margin-top: 26px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line-faint);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 0.82em;
+  color: var(--text-dim);
+}
+.ctl { cursor: pointer; color: var(--phos); font-weight: 700; letter-spacing: 0.06em; white-space: nowrap; }
+.ctl:hover { text-shadow: var(--glow); }
+.ctl-speed { display: flex; align-items: center; gap: 8px; }
+.ctl-speed span { min-width: 26px; color: var(--phos); }
+.ctl-hint { margin-left: auto; opacity: 0.7; letter-spacing: 0.08em; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 110px; height: 3px; background: var(--line); border-radius: 3px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--phos); box-shadow: var(--glow); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 12px; height: 12px; border: none; border-radius: 50%;
+  background: var(--phos); box-shadow: var(--glow); cursor: pointer;
+}
+
+/* ===== footer ============================================================= */
+footer {
+  margin-top: 30px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-faint);
+  text-align: center;
+  font-size: 0.82em;
+  color: var(--text-dim);
+}
+.footer-glyphs { color: var(--amber); letter-spacing: 0.5em; text-shadow: var(--glow-amber); }
+footer a { color: var(--phos); text-decoration: none; }
+footer a:hover { color: var(--phos-bright); text-shadow: var(--glow); }
+
+/* ===== shared nav bar (for interior pages that adopt this stylesheet) ===== */
+.site-bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 18px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(4px);
+  font-size: 0.85em;
+}
+.site-bar .brand { color: var(--phos-bright); font-weight: 700; letter-spacing: 0.12em; text-shadow: var(--glow); text-decoration: none; }
+.site-bar a { color: var(--text-dim); text-decoration: none; }
+.site-bar a:hover { color: var(--phos-bright); text-shadow: var(--glow); }
+.site-bar .spacer { margin-left: auto; }
+
+/* ===== ouroboros easter-egg modal ========================================= */
+#ouroboros-modal {
+  position: fixed; inset: 0; z-index: 10000;
+  display: none; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, rgba(2, 8, 4, 0.9), rgba(0, 0, 0, 0.98));
+  animation: fadeIn 0.6s ease-in;
+}
+#ouroboros-modal.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.82; } }
+
+.ouroboros-container { text-align: center; animation: pulse 3s ease-in-out infinite; }
+.ouroboros-img {
+  width: 400px; height: 400px; max-width: 80vw; max-height: 80vw;
+  filter: drop-shadow(0 0 34px rgba(87, 240, 138, 0.7));
+  animation: rotate 20s linear infinite;
+}
+.symbols-overlay { position: absolute; width: 400px; height: 400px; max-width: 80vw; max-height: 80vw; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none; }
+.symbol { position: absolute; font-size: 20px; color: var(--phos); opacity: 0.6; text-shadow: 0 0 12px rgba(87, 240, 138, 0.9); }
+.ouroboros-text { font-family: var(--mono); font-size: 2em; color: var(--phos); text-shadow: 0 0 22px rgba(87, 240, 138, 0.85); margin-top: 28px; letter-spacing: 0.4em; }
+.ouroboros-subtext { font-family: var(--mono); font-size: 1em; color: var(--phos-dim); margin-top: 14px; letter-spacing: 0.1em; }
+.ouroboros-subtext.close { margin-top: 28px; cursor: pointer; color: var(--amber); }
+.ouroboros-subtext.close:hover { text-shadow: var(--glow-amber); }
+
+/* ===== responsive ========================================================= */
+@media (max-width: 620px) {
+  body { padding: 10px; }
+  .container { margin: 20px auto; }
+  .window-body { padding: 22px 18px 26px; }
+  .nav-grid { grid-template-columns: 1fr; }
+  .window-bar .path { display: none; }
+  .ctl-hint { width: 100%; margin-left: 0; }
+  .ouroboros-text { font-size: 1.4em; }
+}
+
+/* ===== respect reduced motion ============================================= */
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  .boot-line { animation: none; opacity: 1; }
+  .cursor { animation: none; }
+  .ouroboros-img { animation: none; }
+  .ouroboros-container { animation: none; }
+  .entry.pulse .entry-glyph { animation: none; }
+}
