@@ -3,46 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memes | Benign Mischief</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: Georgia, serif;
-            line-height: 1.7;
-            color: #222;
-            background: linear-gradient(to bottom, #f4f1e8 0%, #e8e3d6 100%);
-            padding: 20px;
-        }
-        .container {
-            max-width: 720px;
-            margin: 50px auto;
-            background: #fff;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        h1 {
-            font-size: 2.5em;
-            color: #2c5f3f;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 30px;
-            color: #2c5f3f;
-            text-decoration: none;
-            border-bottom: 2px solid transparent;
-        }
-        .back-link:hover { border-bottom: 2px solid #2c5f3f; }
-        .content { margin: 30px 0; color: #444; }
-    </style>
+    <meta name="theme-color" content="#060907">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <title>Memes — Benign Mischief</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <nav class="site-bar">
+        <a class="brand" href="/">benign://mischief</a>
+        <a href="/art.html">art</a>
+        <a href="/gardens/poems/">poetry</a>
+        <a href="/gardens/">gardens</a>
+        <a href="/library.html">library</a>
+        <a href="/science.html">science</a>
+        <a href="/links-games.html">links</a>
+    </nav>
+
     <div class="container">
-        <a href="index.html" class="back-link">← Back to Home</a>
-        <h1>😄 Memes</h1>
-        <div class="content">
-            <p>Coming soon: Internet humor and cultural moments.</p>
+        <div class="window-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>benign://mischief</span>
+            <span class="path">~ /links/memes</span>
+        </div>
+        <div class="window-body">
+            <header>
+                <a class="crumb" href="links-games.html">← back to links</a>
+                <h1 class="title">☺ MEMES</h1>
+                <p class="subtitle">internet humour &amp; cultural moments · click to enlarge</p>
+            </header>
+
+            <div class="gallery" id="gallery">
+                <figure><img loading="lazy" src="meme-images/BOOOKS.JPG" alt="books"><figcaption>books</figcaption></figure>
+                <figure><img loading="lazy" src="meme-images/collect.jpeg" alt="collect"><figcaption>collect</figcaption></figure>
+                <figure><img loading="lazy" src="meme-images/egggg.JPG" alt="egg"><figcaption>egg</figcaption></figure>
+                <figure><img loading="lazy" src="meme-images/jesusintheway.JPG" alt="jesus in the way"><figcaption>jesus in the way</figcaption></figure>
+                <figure><img loading="lazy" src="meme-images/neyt!.jpeg" alt="neyt"><figcaption>neyt!</figcaption></figure>
+                <figure><img loading="lazy" src="meme-images/taotao.jpeg" alt="tao tao"><figcaption>tao tao</figcaption></figure>
+            </div>
         </div>
     </div>
+
+    <div class="lightbox" id="lightbox"><img id="lightbox-img" src="" alt=""></div>
+
+    <script>
+        const gallery = document.getElementById('gallery');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        gallery.addEventListener('click', (e) => {
+            const img = e.target.closest('img');
+            if (!img) return;
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+            lightbox.classList.add('show');
+        });
+        lightbox.addEventListener('click', () => lightbox.classList.remove('show'));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') lightbox.classList.remove('show');
+        });
+    </script>
 </body>
 </html>

@@ -32,6 +32,7 @@ tended slowly and in the open.
 
 <!-- gardens:start -->
 - [[second-throat/index|Second Throat]] — a project vault, growing in public
+- [[poems/index|Poems]] — words, arranged with intent
 <!-- gardens:end -->
 
 ---

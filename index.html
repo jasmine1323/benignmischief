@@ -154,24 +154,31 @@
 
             let cols, rows, snake, food, dir, running = true, lastTickTime = 0;
 
-            function measureChar() {
+            // Make each character cell SQUARE so the snake moves the same number
+            // of pixels per tick horizontally and vertically. The cell size is the
+            // font/line-height (CELL px); we widen each glyph's advance with
+            // letter-spacing so one column == one row == CELL pixels.
+            const CELL = 18;
+            function measureCharWidth() {
                 const span = document.createElement("span");
-                span.textContent = "@";
+                span.textContent = "@".repeat(20);
                 span.style.position = "absolute";
                 span.style.visibility = "hidden";
+                span.style.whiteSpace = "pre";
                 span.style.fontFamily = getComputedStyle(overlay).fontFamily;
-                span.style.fontSize = "18px";
-                span.style.lineHeight = "18px";
+                span.style.fontSize = CELL + "px";
+                span.style.lineHeight = CELL + "px";
+                span.style.letterSpacing = "0px";
                 document.body.appendChild(span);
-                const rect = span.getBoundingClientRect();
+                const w = span.getBoundingClientRect().width / 20;
                 document.body.removeChild(span);
-                return { w: rect.width, h: rect.height };
+                return w;
             }
-            const CHAR = measureChar();
+            overlay.style.letterSpacing = (CELL - measureCharWidth()) + "px";
 
             function resizeBoard() {
-                cols = Math.floor(window.innerWidth / CHAR.w);
-                rows = Math.floor(window.innerHeight / CHAR.h);
+                cols = Math.floor(window.innerWidth / CELL);
+                rows = Math.floor(window.innerHeight / CELL);
             }
             window.addEventListener("resize", resizeBoard);
             resizeBoard();
