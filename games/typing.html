@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#060907">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <title>Typing — Benign Mischief</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="site-bar">
+        <a class="brand" href="/">benign://mischief</a>
+        <a href="/games/">← arcade</a>
+        <a href="/games/snake.html">snake</a>
+        <a href="/games/2048.html">2048</a>
+        <a href="/games/tetris.html">tetris</a>
+    </nav>
+
+    <div class="container">
+        <div class="window-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>benign://mischief</span>
+            <span class="path">~ /games/typing</span>
+        </div>
+        <div class="window-body">
+            <header>
+                <a class="crumb" href="/games/">← arcade</a>
+                <h1 class="title">⌨ TYPING SPEED</h1>
+                <p class="subtitle">type the passage · timer starts on your first keystroke</p>
+            </header>
+
+            <div class="game-layout">
+                <div class="game-panel" style="align-items: stretch;">
+                    <div class="hud">
+                        <div><span class="label">WPM</span><span class="score" id="wpm">0</span></div>
+                        <div><span class="label">ACCURACY</span><span class="status" id="acc">100%</span></div>
+                        <div style="text-align:right"><span class="label">TIME</span><span class="status" id="time">0.0s</span></div>
+                    </div>
+
+                    <div class="type-passage" id="passage"></div>
+                    <textarea class="type-input" id="input" placeholder="start typing here…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+
+                    <div class="game-controls">
+                        <button class="btn" id="new">↻ new passage</button>
+                        <span class="hint" id="hint">accuracy ≥ 90% to post a score</span>
+                    </div>
+
+                    <div class="game-over" id="over" style="position: static; background: none; backdrop-filter: none; padding: 0; margin-top: 8px;">
+                        <div class="final" id="result"></div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center;">
+                            <input type="text" id="name" maxlength="20" placeholder="enter your name" autocomplete="off">
+                            <button class="btn amber" id="submit">submit WPM</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leaderboard">
+                    <h2>◈ TOP 10 · WPM</h2>
+                    <ul class="lb-list" id="lb-list"></ul>
+                    <p class="lb-note" id="lb-note"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="leaderboard.js"></script>
+    <script>
+    (() => {
+        const GAME = 'typing';
+        const PASSAGES = [
+            "the quick brown fox jumps over the lazy dog while the world keeps spinning quietly beneath a sky full of restless stars",
+            "curiosity is a small engine that runs on wonder, carrying us into rooms we did not know the house contained",
+            "to tend a garden is to make peace with slowness, to trust that seeds keep their promises long after you forget planting them",
+            "every terminal is a doorway; type the right words and the machine will dream in green and answer back in light",
+            "mischief, when it is benign, is only joy that refuses to sit still and insists on rearranging the furniture of the ordinary",
+            "the best code reads like a good sentence: honest, unadorned, and quietly certain of exactly what it means to say"
+        ];
+
+        const passageEl = document.getElementById('passage');
+        const inputEl = document.getElementById('input');
+        const wpmEl = document.getElementById('wpm');
+        const accEl = document.getElementById('acc');
+        const timeEl = document.getElementById('time');
+        const resultEl = document.getElementById('result');
+        const nameEl = document.getElementById('name');
+        const overEl = document.getElementById('over');
+        const submitBtn = document.getElementById('submit');
+        const listEl = document.getElementById('lb-list');
+        const noteEl = document.getElementById('lb-note');
+
+        let target = '', startTime = null, finished = false, finalWpm = 0, finalAcc = 0, raf = null;
+
+        function pick() {
+            target = PASSAGES[(Math.random() * PASSAGES.length) | 0];
+            startTime = null; finished = false; finalWpm = 0;
+            inputEl.value = ''; inputEl.disabled = false;
+            wpmEl.textContent = '0'; accEl.textContent = '100%'; timeEl.textContent = '0.0s';
+            overEl.classList.remove('show');
+            resultEl.textContent = '';
+            renderPassage('');
+            inputEl.focus();
+        }
+
+        function renderPassage(typed) {
+            let html = '';
+            for (let i = 0; i < target.length; i++) {
+                const ch = target[i];
+                const safe = ch === ' ' ? '&nbsp;' : ch.replace('<', '&lt;').replace('>', '&gt;');
+                if (i < typed.length) {
+                    html += `<span class="${typed[i] === ch ? 'done' : 'wrong'}">${safe}</span>`;
+                } else if (i === typed.length) {
+                    html += `<span class="cur">${safe}</span>`;
+                } else {
+                    html += `<span>${safe}</span>`;
+                }
+            }
+            passageEl.innerHTML = html;
+        }
+
+        function stats(typed) {
+            let correct = 0;
+            for (let i = 0; i < typed.length; i++) if (typed[i] === target[i]) correct++;
+            const acc = typed.length ? Math.round((correct / typed.length) * 100) : 100;
+            const mins = (performance.now() - startTime) / 60000;
+            const wpm = mins > 0 ? Math.round((correct / 5) / mins) : 0;
+            return { acc, wpm };
+        }
+
+        function liveTick() {
+            if (!startTime || finished) return;
+            timeEl.textContent = ((performance.now() - startTime) / 1000).toFixed(1) + 's';
+            const { wpm } = stats(inputEl.value);
+            wpmEl.textContent = wpm;
+            raf = requestAnimationFrame(liveTick);
+        }
+
+        inputEl.addEventListener('input', () => {
+            if (finished) return;
+            const typed = inputEl.value;
+            if (startTime === null && typed.length > 0) { startTime = performance.now(); raf = requestAnimationFrame(liveTick); }
+            renderPassage(typed);
+            const { acc, wpm } = stats(typed);
+            accEl.textContent = acc + '%';
+            wpmEl.textContent = wpm;
+            if (typed.length >= target.length) finish();
+        });
+
+        function finish() {
+            finished = true;
+            inputEl.disabled = true;
+            cancelAnimationFrame(raf);
+            const { acc, wpm } = stats(inputEl.value);
+            finalWpm = wpm; finalAcc = acc;
+            timeEl.textContent = ((performance.now() - startTime) / 1000).toFixed(1) + 's';
+            resultEl.innerHTML = `you typed <b style="color:var(--phos-bright)">${wpm} WPM</b> at ${acc}% accuracy`;
+            overEl.classList.add('show');
+            if (acc >= 90) {
+                submitBtn.disabled = false;
+                nameEl.value = localStorage.getItem('player:name') || '';
+                nameEl.focus();
+            } else {
+                submitBtn.disabled = true;
+                resultEl.innerHTML += `<br><span class="lb-empty">need ≥ 90% accuracy to post — try again</span>`;
+            }
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            if (finalAcc < 90) return;
+            const name = Leaderboard.cleanName(nameEl.value);
+            localStorage.setItem('player:name', name);
+            await Leaderboard.submit(GAME, name, finalWpm);
+            overEl.classList.remove('show');
+            Leaderboard.render(GAME, listEl);
+        });
+        document.getElementById('new').addEventListener('click', pick);
+
+        noteEl.textContent = Leaderboard.isRemote() ? 'live shared leaderboard' : 'saved on this device until the shared leaderboard is connected';
+        Leaderboard.render(GAME, listEl);
+        pick();
+    })();
+    </script>
+</body>
+</html>

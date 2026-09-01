@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#060907">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <title>Tetris — Benign Mischief</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="site-bar">
+        <a class="brand" href="/">benign://mischief</a>
+        <a href="/games/">← arcade</a>
+        <a href="/games/snake.html">snake</a>
+        <a href="/games/typing.html">typing</a>
+        <a href="/games/2048.html">2048</a>
+    </nav>
+
+    <div class="container">
+        <div class="window-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>benign://mischief</span>
+            <span class="path">~ /games/tetris</span>
+        </div>
+        <div class="window-body">
+            <header>
+                <a class="crumb" href="/games/">← arcade</a>
+                <h1 class="title">⊞ TETRIS</h1>
+                <p class="subtitle">← → move · ↑ rotate · ↓ soft drop · space hard drop</p>
+            </header>
+
+            <div class="game-layout">
+                <div class="game-panel">
+                    <div class="hud">
+                        <div><span class="label">SCORE</span><span class="score" id="score">0</span></div>
+                        <div><span class="label">LINES</span><span class="status" id="lines">0</span></div>
+                        <div style="text-align:right"><span class="label">LEVEL</span><span class="status" id="level">1</span></div>
+                    </div>
+
+                    <div class="canvas-wrap tall">
+                        <canvas id="board" class="game-canvas tall" width="300" height="600"></canvas>
+                        <div class="game-over" id="over">
+                            <div class="big" id="over-title">game over</div>
+                            <div class="final">score: <span id="final">0</span></div>
+                            <input type="text" id="name" maxlength="20" placeholder="enter your name" autocomplete="off">
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                                <button class="btn amber" id="submit">submit score</button>
+                                <button class="btn" id="again">play again</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="game-controls">
+                        <button class="btn" id="start">▶ start</button>
+                        <span class="hint">space to start / pause</span>
+                    </div>
+
+                    <div class="dpad">
+                        <button class="up" data-act="rotate">⟳</button>
+                        <button class="left" data-act="left">←</button>
+                        <button class="right" data-act="right">→</button>
+                        <button class="down" data-act="down">↓</button>
+                    </div>
+                </div>
+
+                <div class="leaderboard">
+                    <h2>◈ TOP 10 · TETRIS</h2>
+                    <ul class="lb-list" id="lb-list"></ul>
+                    <p class="lb-note" id="lb-note"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="leaderboard.js"></script>
+    <script>
+    (() => {
+        const GAME = 'tetris';
+        const COLS = 10, ROWS = 20;
+        const canvas = document.getElementById('board');
+        const ctx = canvas.getContext('2d');
+        const cell = canvas.width / COLS; // 30
+
+        const scoreEl = document.getElementById('score');
+        const linesEl = document.getElementById('lines');
+        const levelEl = document.getElementById('level');
+        const overEl = document.getElementById('over');
+        const finalEl = document.getElementById('final');
+        const nameEl = document.getElementById('name');
+        const startBtn = document.getElementById('start');
+        const listEl = document.getElementById('lb-list');
+        const noteEl = document.getElementById('lb-note');
+
+        const PIECES = {
+            I: { c: '#57f08a', m: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] },
+            O: { c: '#ffb454', m: [[1,1],[1,1]] },
+            T: { c: '#8dffb4', m: [[0,1,0],[1,1,1],[0,0,0]] },
+            S: { c: '#7bd88f', m: [[0,1,1],[1,1,0],[0,0,0]] },
+            Z: { c: '#d4a574', m: [[1,1,0],[0,1,1],[0,0,0]] },
+            J: { c: '#4fd6c9', m: [[1,0,0],[1,1,1],[0,0,0]] },
+            L: { c: '#ffd27f', m: [[0,0,1],[1,1,1],[0,0,0]] },
+        };
+        const KEYS = Object.keys(PIECES);
+
+        let board, cur, bag, score, lines, level, running, dead, acc, last, dropInterval, raf;
+
+        function newBoard() { return Array.from({ length: ROWS }, () => Array(COLS).fill(null)); }
+
+        function refillBag() { bag = KEYS.slice().sort(() => Math.random() - 0.5); }
+        function nextPiece() {
+            if (!bag || !bag.length) refillBag();
+            const k = bag.pop();
+            const p = PIECES[k];
+            return { m: p.m.map(r => r.slice()), c: p.c, x: ((COLS - p.m[0].length) / 2) | 0, y: 0 };
+        }
+
+        function collides(m, px, py) {
+            for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) {
+                if (!m[r][c]) continue;
+                const x = px + c, y = py + r;
+                if (x < 0 || x >= COLS || y >= ROWS) return true;
+                if (y >= 0 && board[y][x]) return true;
+            }
+            return false;
+        }
+        function rotateCW(m) {
+            const n = m.length, w = m[0].length;
+            const res = Array.from({ length: w }, () => Array(n).fill(0));
+            for (let r = 0; r < n; r++) for (let c = 0; c < w; c++) res[c][n - 1 - r] = m[r][c];
+            return res;
+        }
+
+        function merge() {
+            cur.m.forEach((row, r) => row.forEach((v, c) => {
+                if (v) { const y = cur.y + r, x = cur.x + c; if (y >= 0) board[y][x] = cur.c; }
+            }));
+        }
+        function clearLines() {
+            let cleared = 0;
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (board[r].every(v => v)) {
+                    board.splice(r, 1);
+                    board.unshift(Array(COLS).fill(null));
+                    cleared++; r++;
+                }
+            }
+            if (cleared) {
+                lines += cleared;
+                score += [0, 100, 300, 500, 800][cleared] * level;
+                level = Math.floor(lines / 10) + 1;
+                dropInterval = Math.max(90, 600 - (level - 1) * 45);
+                linesEl.textContent = lines;
+                levelEl.textContent = level;
+                scoreEl.textContent = score;
+            }
+        }
+
+        function lock() {
+            merge();
+            clearLines();
+            cur = nextPiece();
+            if (collides(cur.m, cur.x, cur.y)) return gameOver();
+        }
+        function softDrop() {
+            if (!collides(cur.m, cur.x, cur.y + 1)) { cur.y++; }
+            else lock();
+        }
+        function hardDrop() {
+            let d = 0;
+            while (!collides(cur.m, cur.x, cur.y + 1)) { cur.y++; d++; }
+            score += d * 2; scoreEl.textContent = score;
+            lock();
+            draw();
+        }
+        function move(dx) { if (!collides(cur.m, cur.x + dx, cur.y)) cur.x += dx; }
+        function rotate() {
+            const r = rotateCW(cur.m);
+            for (const k of [0, -1, 1, -2, 2]) {
+                if (!collides(r, cur.x + k, cur.y)) { cur.m = r; cur.x += k; return; }
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#060907';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(87,240,138,0.05)';
+            for (let i = 1; i < COLS; i++) { ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,canvas.height); ctx.stroke(); }
+            for (let i = 1; i < ROWS; i++) { ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(canvas.width,i*cell); ctx.stroke(); }
+            // settled
+            for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (board[r][c]) block(c, r, board[r][c]);
+            // current
+            if (cur) cur.m.forEach((row, r) => row.forEach((v, c) => { if (v) block(cur.x + c, cur.y + r, cur.c); }));
+        }
+        function block(x, y, color) {
+            if (y < 0) return;
+            ctx.fillStyle = color;
+            ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.12)';
+            ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, 4);
+        }
+
+        function loop(t) {
+            if (!running) return;
+            if (!last) last = t;
+            acc += t - last; last = t;
+            if (acc >= dropInterval) { softDrop(); acc = 0; }
+            draw();
+            raf = requestAnimationFrame(loop);
+        }
+
+        function reset() {
+            board = newBoard();
+            refillBag();
+            cur = nextPiece();
+            score = 0; lines = 0; level = 1; dead = false; acc = 0; last = 0;
+            dropInterval = 600;
+            scoreEl.textContent = 0; linesEl.textContent = 0; levelEl.textContent = 1;
+            overEl.classList.remove('show');
+            draw();
+        }
+        function start() {
+            if (dead) reset();
+            if (running) return;
+            running = true; last = 0;
+            startBtn.textContent = '⏸ pause';
+            raf = requestAnimationFrame(loop);
+        }
+        function pause() { running = false; startBtn.textContent = '▶ start'; cancelAnimationFrame(raf); }
+        function toggle() { running ? pause() : start(); }
+        function gameOver() {
+            running = false; dead = true;
+            cancelAnimationFrame(raf);
+            startBtn.textContent = '▶ start';
+            finalEl.textContent = score;
+            nameEl.value = localStorage.getItem('player:name') || '';
+            overEl.classList.add('show');
+            nameEl.focus();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') { e.preventDefault(); if (!running && !dead) { start(); return; } hardDrop(); return; }
+            if (!running) return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); move(-1); draw(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); move(1); draw(); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); softDrop(); acc = 0; draw(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); rotate(); draw(); }
+        });
+        document.querySelectorAll('.dpad button').forEach(b => b.addEventListener('click', () => {
+            if (!running) { if (b.dataset.act === 'rotate') { start(); } return; }
+            const a = b.dataset.act;
+            if (a === 'left') move(-1); else if (a === 'right') move(1);
+            else if (a === 'down') { softDrop(); acc = 0; } else if (a === 'rotate') rotate();
+            draw();
+        }));
+
+        startBtn.addEventListener('click', toggle);
+        document.getElementById('again').addEventListener('click', () => { reset(); start(); });
+        document.getElementById('submit').addEventListener('click', async () => {
+            const name = Leaderboard.cleanName(nameEl.value);
+            localStorage.setItem('player:name', name);
+            await Leaderboard.submit(GAME, name, score);
+            overEl.classList.remove('show');
+            Leaderboard.render(GAME, listEl);
+        });
+
+        noteEl.textContent = Leaderboard.isRemote() ? 'live shared leaderboard' : 'saved on this device until the shared leaderboard is connected';
+        Leaderboard.render(GAME, listEl);
+        reset();
+    })();
+    </script>
+</body>
+</html>

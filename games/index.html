@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#060907">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <title>Games — Benign Mischief</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="site-bar">
+        <a class="brand" href="/">benign://mischief</a>
+        <a href="/art.html">art</a>
+        <a href="/gardens/poems/">poetry</a>
+        <a href="/gardens/">gardens</a>
+        <a href="/library.html">library</a>
+        <a href="/games/">games</a>
+        <a href="/links-games.html">links</a>
+    </nav>
+
+    <div class="container">
+        <div class="window-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>benign://mischief</span>
+            <span class="path">~ /games</span>
+        </div>
+        <div class="window-body">
+            <header>
+                <a class="crumb" href="/">← back to home</a>
+                <h1 class="title">⚄ ARCADE</h1>
+                <p class="subtitle">pick a game · set a high score · haunt the leaderboard</p>
+            </header>
+
+            <nav class="nav-grid">
+                <a class="entry" href="snake.html">
+                    <span class="entry-head"><span class="entry-glyph">@</span><span class="entry-name">SNAKE</span></span>
+                    <p class="entry-desc">fixed speed, fair play — pick your colors</p>
+                </a>
+                <a class="entry" href="typing.html">
+                    <span class="entry-head"><span class="entry-glyph">⌨</span><span class="entry-name">TYPING</span></span>
+                    <p class="entry-desc">how fast can you type? words per minute</p>
+                </a>
+                <a class="entry" href="2048.html">
+                    <span class="entry-head"><span class="entry-glyph">▦</span><span class="entry-name">2048</span></span>
+                    <p class="entry-desc">slide &amp; merge tiles to the highest score</p>
+                </a>
+                <a class="entry" href="tetris.html">
+                    <span class="entry-head"><span class="entry-glyph">⊞</span><span class="entry-name">TETRIS</span></span>
+                    <p class="entry-desc">stack the falling blocks, clear the lines</p>
+                </a>
+            </nav>
+
+            <div class="leaderboard" style="margin-top: 28px;">
+                <h2>◈ HALL OF FAME</h2>
+                <div class="lb-tabs" id="lb-tabs"></div>
+                <ul class="lb-list" id="lb-list"></ul>
+                <p class="lb-note" id="lb-note"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="leaderboard.js"></script>
+    <script>
+        const tabsEl = document.getElementById('lb-tabs');
+        const listEl = document.getElementById('lb-list');
+        const noteEl = document.getElementById('lb-note');
+        let current = Leaderboard.GAMES[0].id;
+
+        function drawTabs() {
+            tabsEl.innerHTML = Leaderboard.GAMES.map(g =>
+                `<button class="lb-tab${g.id === current ? ' active' : ''}" data-id="${g.id}">${g.name}</button>`
+            ).join('');
+        }
+        function show(id) {
+            current = id;
+            drawTabs();
+            Leaderboard.render(id, listEl);
+        }
+        tabsEl.addEventListener('click', (e) => {
+            const b = e.target.closest('.lb-tab');
+            if (b) show(b.dataset.id);
+        });
+
+        noteEl.textContent = Leaderboard.isRemote()
+            ? 'live shared leaderboard · top 10 per game'
+            : 'scores are saved on this device only until the shared leaderboard is connected';
+
+        drawTabs();
+        show(current);
+    </script>
+</body>
+</html>
